@@ -1,17 +1,27 @@
 name: Elevator
-version: 1.0.0
+version: 1.1
 main: com.MootComb.Elevator.Main
 api-version: 1.13
+description: Elevator and teleporter plugin
 author: MootComb
-description: Elevator and Teleporter plugin
+
+commands:
+  elevator:
+    description: Main Elevator command
+    usage: /elevator reload
+    permission: elevator.reload
+    aliases: []
 
 permissions:
   elevator.use:
     description: Allows using elevators
     default: true
-  elevator.bypass:
-    description: Bypass cooldown
-    default: op
   elevator.teleport:
     description: Allows using teleporters
     default: true
+  elevator.bypass:
+    description: Bypasses cooldown
+    default: op
+  elevator.reload:
+    description: Allows reloading config
+    default: op

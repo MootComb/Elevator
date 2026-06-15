@@ -28,6 +28,10 @@ public final class Main extends JavaPlugin implements Listener {
         CHAT, TITLE, SUBTITLE
     }
 
+    private static final int DOUBLE_CLICK_DELAY_TICKS = 5;
+    private static final int SNEAK_CHECK_DELAY_TICKS = 1;
+    private static final int DEFAULT_END_ROD_COUNT = 5;
+
     private Set<Material> elevatorBlocks = new HashSet<>();
     private int blockDistance;
     private boolean enableParticle;
@@ -76,10 +80,9 @@ public final class Main extends JavaPlugin implements Listener {
     private String permTeleport;
 
     private final Map<UUID, Long> cooldownMap = new HashMap<>();
-    // Change: binding not to block coordinates, but to block type + world
     private final Map<String, Map<Material, TeleporterQueue>> teleporterQueues = new ConcurrentHashMap<>();
     private final Map<UUID, BukkitTask> timeoutTasks = new HashMap<>();
-    private final Set<UUID> recentTeleporterClicks = new HashSet<>();
+    private final Set<UUID> recentTeleporterClicks = ConcurrentHashMap.newKeySet();
 
     private static final Pattern HEX_PATTERN = Pattern.compile("&#([A-Fa-f0-9]{6})");
 
@@ -101,6 +104,21 @@ public final class Main extends JavaPlugin implements Listener {
         loadConfig();
         getServer().getPluginManager().registerEvents(this, this);
 
+        if (getCommand("elevator") != null) {
+            getCommand("elevator").setExecutor((sender, cmd, label, args) -> {
+                if (args.length > 0 && args[0].equalsIgnoreCase("reload")) {
+                    if (!sender.hasPermission("elevator.reload")) {
+                        sender.sendMessage(translateHexColors("&#FF5555No permission!"));
+                        return true;
+                    }
+                    loadConfig();
+                    sender.sendMessage(translateHexColors("&#55FF55Elevator config reloaded!"));
+                    return true;
+                }
+                return false;
+            });
+        }
+
         getLogger().info("==================================================");
         getLogger().info("   Elevator v1.0.0 Enabled!");
         getLogger().info("   Elevator blocks: " + elevatorBlocks.size());
@@ -119,6 +137,7 @@ public final class Main extends JavaPlugin implements Listener {
         getLogger().info("Elevator Disabled!");
     }
 
+    // Converts hex color codes like &#RRGGBB to Minecraft colors
     private String translateHexColors(String message) {
         Matcher matcher = HEX_PATTERN.matcher(message);
         StringBuffer buffer = new StringBuffer();
@@ -130,6 +149,7 @@ public final class Main extends JavaPlugin implements Listener {
         return org.bukkit.ChatColor.translateAlternateColorCodes('&', buffer.toString());
     }
 
+    // Loads all configuration values from config.yml
     private void loadConfig() {
         saveDefaultConfig();
         reloadConfig();
@@ -230,6 +250,7 @@ public final class Main extends JavaPlugin implements Listener {
         permTeleport = getConfig().getString("Permissions.Teleport", "elevator.teleport");
     }
 
+    // Converts string from config to MessageType enum
     private MessageType getMessageType(String type) {
         try {
             return MessageType.valueOf(type.toUpperCase());
@@ -238,6 +259,7 @@ public final class Main extends JavaPlugin implements Listener {
         }
     }
 
+    // Sends a message to player in specified format (CHAT/TITLE/SUBTITLE)
     private void sendMessage(Player player, String message, MessageType type) {
         sendMessage(player, message, type, null);
     }
@@ -263,6 +285,7 @@ public final class Main extends JavaPlugin implements Listener {
         }
     }
 
+    // Sends teleporter-specific messages with its own title settings
     private void sendTeleporterMessage(Player player, String message, MessageType type) {
         sendTeleporterMessage(player, message, type, null);
     }
@@ -288,15 +311,18 @@ public final class Main extends JavaPlugin implements Listener {
         }
     }
 
+    // Checks if player has required permission, respects global toggle
     private boolean hasPermission(Player player, String perm) {
         if (!checkPermission) return true;
         return player.hasPermission(perm);
     }
 
+    // Checks if player is in a disabled world
     private boolean isInDisabledWorld(Player player) {
         return disabledWorlds.contains(player.getWorld().getName());
     }
 
+    // Checks and handles cooldown, returns true if on cooldown
     private boolean isOnCooldown(Player player) {
         if (!enableCooldown) return false;
         if (hasPermission(player, permBypass)) return false;
@@ -314,12 +340,14 @@ public final class Main extends JavaPlugin implements Listener {
         return false;
     }
 
+    // Sets cooldown for player
     private void setCooldown(Player player) {
         if (enableCooldown && !hasPermission(player, permBypass)) {
             cooldownMap.put(player.getUniqueId(), System.currentTimeMillis());
         }
     }
 
+    // Checks if destination location is safe (no solid blocks, lava, fire)
     private boolean isSafeLocation(Location loc, boolean isTeleporter) {
         boolean unsafeAllowed = isTeleporter ? teleporterAllowUnsafe : allowUnsafe;
         if (unsafeAllowed) return true;
@@ -327,39 +355,46 @@ public final class Main extends JavaPlugin implements Listener {
         return !type.isSolid() && type != Material.LAVA && type != Material.FIRE;
     }
 
-    private void playElevatorEffects(Location loc) {
-        try {
-            Sound sound = Sound.valueOf(usageSound.toUpperCase());
-            loc.getWorld().playSound(loc, sound, 0.5f, 1.2f);
-        } catch (IllegalArgumentException ignored) {}
+    // Spawns particle effects for elevator
+    private void spawnElevatorParticles(Location loc) {
+        if (!enableParticle) return;
+        loc.getWorld().spawnParticle(particleType, loc.clone().add(0, 0.5, 0),
+                particleCount, 0.3, 0.1, 0.3, 0.1);
+        loc.getWorld().spawnParticle(Particle.END_ROD, loc.clone().add(0, 0.5, 0),
+                DEFAULT_END_ROD_COUNT, 0.2, 0.2, 0.2, 0.05);
+    }
 
-        try {
-            Sound activate = Sound.valueOf(activateSound.toUpperCase());
-            loc.getWorld().playSound(loc, activate, 0.3f, 1.5f);
-        } catch (IllegalArgumentException ignored) {}
+    // Spawns particle effects for teleporter
+    private void spawnTeleporterParticles(Location loc) {
+        if (!teleporterEnableParticle) return;
+        loc.getWorld().spawnParticle(particleType, loc.clone().add(0, 0.5, 0),
+                particleCount, 0.3, 0.1, 0.3, 0.1);
+        loc.getWorld().spawnParticle(Particle.END_ROD, loc.clone().add(0, 0.5, 0),
+                DEFAULT_END_ROD_COUNT, 0.2, 0.2, 0.2, 0.05);
+    }
 
-        if (enableParticle) {
-            loc.getWorld().spawnParticle(particleType, loc.clone().add(0, 0.5, 0), particleCount, 0.3, 0.1, 0.3, 0.1);
-            loc.getWorld().spawnParticle(Particle.END_ROD, loc.clone().add(0, 0.5, 0), 5, 0.2, 0.2, 0.2, 0.05);
+    // Plays sound and particle effects at location
+    private void playEffects(Location loc, String soundName, boolean isTeleporter) {
+        if (soundName != null && !soundName.isEmpty()) {
+            try {
+                Sound sound = Sound.valueOf(soundName.toUpperCase());
+                loc.getWorld().playSound(loc, sound, 0.5f, 1.2f);
+            } catch (IllegalArgumentException ignored) {}
+        }
+
+        if (isTeleporter) {
+            spawnTeleporterParticles(loc);
+        } else {
+            spawnElevatorParticles(loc);
         }
     }
 
-    private void playTeleporterEffects(Location loc) {
-        try {
-            Sound sound = Sound.valueOf(teleporterUsageSound.toUpperCase());
-            loc.getWorld().playSound(loc, sound, 0.5f, 1.2f);
-        } catch (IllegalArgumentException ignored) {}
-
-        if (teleporterEnableParticle) {
-            loc.getWorld().spawnParticle(particleType, loc.clone().add(0, 0.5, 0), particleCount, 0.3, 0.1, 0.3, 0.1);
-            loc.getWorld().spawnParticle(Particle.END_ROD, loc.clone().add(0, 0.5, 0), 5, 0.2, 0.2, 0.2, 0.05);
-        }
-    }
-
+    // Creates unique key for teleporter queue based on world and block type
     private String getQueueKey(Player player, Material teleporterType) {
         return player.getWorld().getName() + ":" + teleporterType.name();
     }
 
+    // Main teleporter logic: handles queue matching, waiting, and swapping
     private void handleTeleporterClick(Player player, Location blockLocation, Material teleporterType) {
         if (isInDisabledWorld(player)) return;
         if (!hasPermission(player, permTeleport)) return;
@@ -368,7 +403,7 @@ public final class Main extends JavaPlugin implements Listener {
         String queueKey = getQueueKey(player, teleporterType);
         Map<Material, TeleporterQueue> worldQueues = teleporterQueues.computeIfAbsent(queueKey, k -> new ConcurrentHashMap<>());
 
-        // Check for double click / cancellation
+        // Cancel existing request if player clicks same teleporter again
         if (worldQueues.containsKey(teleporterType) &&
                 worldQueues.get(teleporterType).playerId.equals(player.getUniqueId())) {
             sendTeleporterMessage(player, teleporterCancelledMessage, teleporterMessageType);
@@ -376,12 +411,17 @@ public final class Main extends JavaPlugin implements Listener {
             return;
         }
 
-        // If someone is in the queue
+        // Check if someone is waiting in queue
         if (worldQueues.containsKey(teleporterType)) {
             TeleporterQueue waiting = worldQueues.get(teleporterType);
             Player waitingPlayer = Bukkit.getPlayer(waiting.playerId);
 
-            if (waitingPlayer != null && waitingPlayer.isOnline() && !waiting.playerId.equals(player.getUniqueId())) {
+            // Remove offline players from queue
+            if (waitingPlayer == null || !waitingPlayer.isOnline()) {
+                worldQueues.remove(teleporterType);
+                cancelTimeoutTask(waiting.playerId);
+            } else if (!waiting.playerId.equals(player.getUniqueId())) {
+                // Match found - perform swap
                 cancelTimeoutTask(waiting.playerId);
 
                 sendTeleporterMessage(waitingPlayer, teleporterMatchedMessage, teleporterMessageType);
@@ -390,6 +430,7 @@ public final class Main extends JavaPlugin implements Listener {
                 Location playerLoc = player.getLocation().clone();
                 Location waitingLoc = waitingPlayer.getLocation().clone();
 
+                // Safety checks
                 if (!isSafeLocation(waitingLoc, true) || !isSafeLocation(playerLoc, true)) {
                     sendTeleporterMessage(player, elevatorDangerMessage, elevatorMessageType);
                     sendTeleporterMessage(waitingPlayer, elevatorDangerMessage, elevatorMessageType);
@@ -404,17 +445,18 @@ public final class Main extends JavaPlugin implements Listener {
                     return;
                 }
 
-                playTeleporterEffects(playerLoc);
-                playTeleporterEffects(waitingLoc);
+                playEffects(playerLoc, teleporterUsageSound, true);
+                playEffects(waitingLoc, teleporterUsageSound, true);
 
+                // Perform teleport swap
                 new BukkitRunnable() {
                     @Override
                     public void run() {
                         player.teleport(waitingLoc);
                         waitingPlayer.teleport(playerLoc);
 
-                        playTeleporterEffects(waitingLoc);
-                        playTeleporterEffects(playerLoc);
+                        playEffects(waitingLoc, teleporterUsageSound, true);
+                        playEffects(playerLoc, teleporterUsageSound, true);
 
                         sendTeleporterMessage(player, teleporterSwappedMessage, teleporterMessageType);
                         sendTeleporterMessage(waitingPlayer, teleporterSwappedMessage, teleporterMessageType);
@@ -426,17 +468,14 @@ public final class Main extends JavaPlugin implements Listener {
 
                 worldQueues.remove(teleporterType);
                 return;
-            } else {
-                // Waiting player is offline - remove
-                worldQueues.remove(teleporterType);
-                cancelTimeoutTask(waiting.playerId);
             }
         }
 
-        // Add player to queue
+        // No match found - add player to queue
         addToTeleporterQueue(player, teleporterType);
     }
 
+    // Adds player to teleporter queue with timeout
     private void addToTeleporterQueue(Player player, Material teleporterType) {
         String queueKey = getQueueKey(player, teleporterType);
         Map<Material, TeleporterQueue> worldQueues = teleporterQueues.computeIfAbsent(queueKey, k -> new ConcurrentHashMap<>());
@@ -446,6 +485,7 @@ public final class Main extends JavaPlugin implements Listener {
         String msg = teleporterWaitingMessage.replace("%time%", String.valueOf(warmupTime));
         sendTeleporterMessage(player, msg, teleporterMessageType);
 
+        // Auto-cancel after warmup time
         BukkitTask timeoutTask = new BukkitRunnable() {
             @Override
             public void run() {
@@ -466,6 +506,7 @@ public final class Main extends JavaPlugin implements Listener {
         timeoutTasks.put(player.getUniqueId(), timeoutTask);
     }
 
+    // Cancels player's pending teleporter request
     private void cancelTeleporterRequest(Player player, Material teleporterType) {
         String queueKey = getQueueKey(player, teleporterType);
         Map<Material, TeleporterQueue> worldQueues = teleporterQueues.get(queueKey);
@@ -481,6 +522,7 @@ public final class Main extends JavaPlugin implements Listener {
         }
     }
 
+    // Cancels timeout task for player
     private void cancelTimeoutTask(UUID playerId) {
         if (timeoutTasks.containsKey(playerId)) {
             timeoutTasks.get(playerId).cancel();
@@ -488,6 +530,7 @@ public final class Main extends JavaPlugin implements Listener {
         }
     }
 
+    // Teleports player down to nearest elevator below
     private void teleportDown(Player player) {
         if (isInDisabledWorld(player)) return;
         if (!hasPermission(player, permUse)) return;
@@ -501,7 +544,7 @@ public final class Main extends JavaPlugin implements Listener {
         for (int i = 1; i <= blockDistance; i++) {
             Location checkLoc = feetLocation.clone().subtract(0, i, 0);
             if (elevatorBlocks.contains(checkLoc.getBlock().getType())) {
-                Location targetLoc = checkLoc.clone().add(0, 1, 0);
+                Location targetLoc = checkLoc.clone();
 
                 if (!isSafeLocation(targetLoc, false)) {
                     sendMessage(player, elevatorDangerMessage, elevatorMessageType);
@@ -509,7 +552,7 @@ public final class Main extends JavaPlugin implements Listener {
                 }
 
                 player.teleport(targetLoc);
-                playElevatorEffects(targetLoc);
+                playEffects(targetLoc, usageSound, false);
                 sendMessage(player, elevatorDownMessage, elevatorMessageType);
                 setCooldown(player);
                 return;
@@ -517,6 +560,7 @@ public final class Main extends JavaPlugin implements Listener {
         }
     }
 
+    // Teleports player up to nearest elevator above
     private void teleportUp(Player player) {
         if (isInDisabledWorld(player)) return;
         if (!hasPermission(player, permUse)) return;
@@ -530,7 +574,7 @@ public final class Main extends JavaPlugin implements Listener {
         for (int i = 1; i <= blockDistance; i++) {
             Location checkLoc = feetLocation.clone().add(0, i, 0);
             if (elevatorBlocks.contains(checkLoc.getBlock().getType())) {
-                Location targetLoc = checkLoc.clone().add(0, 1, 0);
+                Location targetLoc = checkLoc.clone();
 
                 if (!isSafeLocation(targetLoc, false)) {
                     sendMessage(player, elevatorDangerMessage, elevatorMessageType);
@@ -543,7 +587,7 @@ public final class Main extends JavaPlugin implements Listener {
                     @Override
                     public void run() {
                         player.teleport(targetLoc);
-                        playElevatorEffects(targetLoc);
+                        playEffects(targetLoc, usageSound, false);
                         sendMessage(player, elevatorUpMessage, elevatorMessageType);
                         setCooldown(player);
                     }
@@ -553,12 +597,13 @@ public final class Main extends JavaPlugin implements Listener {
         }
     }
 
-    @EventHandler(priority = EventPriority.NORMAL)
+    // Detects player jump and triggers upward teleport
+    @EventHandler(priority = EventPriority.HIGHEST)
     public void onPlayerJump(PlayerMoveEvent event) {
         Player player = event.getPlayer();
 
-        if (event.getFrom().getY() >= event.getTo().getY()) return;
-        if (player.isOnGround()) return;
+        if (event.getTo().getY() <= event.getFrom().getY()) return;
+        if (event.getFrom().getBlock().getY() == event.getTo().getBlock().getY()) return;
 
         Location feetLocation = player.getLocation().clone();
         feetLocation.setY(feetLocation.getY() - 0.1);
@@ -567,15 +612,18 @@ public final class Main extends JavaPlugin implements Listener {
             for (int i = 1; i <= blockDistance; i++) {
                 Location checkLoc = feetLocation.clone().add(0, i, 0);
                 if (elevatorBlocks.contains(checkLoc.getBlock().getType())) {
-                    Location targetLoc = checkLoc.clone().add(0, 1, 0);
+                    Location targetLoc = checkLoc.clone().subtract(0, 0.65, 0);
 
                     if (!isSafeLocation(targetLoc, false)) {
                         sendMessage(player, elevatorDangerMessage, elevatorMessageType);
                         return;
                     }
 
+                    player.setVelocity(new org.bukkit.util.Vector(0, 0, 0));
+                    player.setFallDistance(0);
+
                     player.teleport(targetLoc);
-                    playElevatorEffects(targetLoc);
+                    playEffects(targetLoc, usageSound, false);
                     sendMessage(player, elevatorUpMessage, elevatorMessageType);
                     setCooldown(player);
                     return;
@@ -584,6 +632,7 @@ public final class Main extends JavaPlugin implements Listener {
         }
     }
 
+    // Detects player sneak and triggers downward teleport after delay
     @EventHandler
     public void onPlayerSneak(PlayerToggleSneakEvent event) {
         Player player = event.getPlayer();
@@ -595,9 +644,10 @@ public final class Main extends JavaPlugin implements Listener {
                 if (!player.isOnline() || !player.isSneaking()) return;
                 teleportDown(player);
             }
-        }.runTaskLater(this, 1L);
+        }.runTaskLater(this, SNEAK_CHECK_DELAY_TICKS);
     }
 
+    // Detects right-click on teleporter blocks
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onPlayerInteract(PlayerInteractEvent event) {
         Player player = event.getPlayer();
@@ -610,7 +660,7 @@ public final class Main extends JavaPlugin implements Listener {
         if (teleporterBlocks.contains(blockType)) {
             event.setCancelled(true);
 
-            // Protection against double triggering
+            // Prevent double-click spam
             if (recentTeleporterClicks.contains(player.getUniqueId())) {
                 return;
             }
@@ -622,26 +672,24 @@ public final class Main extends JavaPlugin implements Listener {
                 public void run() {
                     recentTeleporterClicks.remove(player.getUniqueId());
                 }
-            }.runTaskLater(this, 5L);
+            }.runTaskLater(this, DOUBLE_CLICK_DELAY_TICKS);
 
-            // Pass block type instead of coordinates
             handleTeleporterClick(player, event.getClickedBlock().getLocation(), blockType);
         }
     }
 
+    // Cleans up player data on quit
     @EventHandler
     public void onPlayerQuit(PlayerQuitEvent event) {
         Player player = event.getPlayer();
         cancelTimeoutTask(player.getUniqueId());
         recentTeleporterClicks.remove(player.getUniqueId());
 
-        // Clear queues for this player
         for (Map<Material, TeleporterQueue> worldQueues : teleporterQueues.values()) {
             worldQueues.entrySet().removeIf(entry ->
                     entry.getValue().playerId.equals(player.getUniqueId()));
         }
 
-        // Remove empty worlds
         teleporterQueues.entrySet().removeIf(entry -> entry.getValue().isEmpty());
     }
 }

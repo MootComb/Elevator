@@ -152,8 +152,8 @@ Permissions:
   # Permission to use elevators
   Use: "elevator.use"
 
-  # Permission to bypass cooldown
-  BypassCooldown: "elevator.bypass"
-
   # Permission to use teleporters
   Teleport: "elevator.teleport"
+
+  # Permission to bypass cooldown
+  BypassCooldown: "elevator.bypass"
