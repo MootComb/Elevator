@@ -85,10 +85,8 @@ jobs:
       uses: softprops/action-gh-release@v1
       with:
         tag_name: ${{ steps.get_version.outputs.TAG }}
-        name: "Release ${{ steps.get_version.outputs.VERSION }}"
+        name: "Elevator ${{ steps.get_version.outputs.VERSION }}"
         body: |
-          ## Elevator Plugin ${{ steps.get_version.outputs.VERSION }}
-          
           ### Installation:
           1. Download `Elevator-${{ steps.get_version.outputs.VERSION }}.jar`
           2. Place into `plugins` folder of your Minecraft server
