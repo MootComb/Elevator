@@ -1,4 +1,4 @@
-name: Build and Release
+name: Build
 
 on:
   push:
@@ -43,101 +43,58 @@ jobs:
     - name: Get version from pom.xml
       id: get_version
       run: |
-        VERSION_NAME=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
-        echo "VERSION_NAME=$VERSION_NAME" >> $GITHUB_OUTPUT
+        VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
+        echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+        echo "TAG=v${VERSION}" >> $GITHUB_OUTPUT
     
-    - name: Parse version and check stable conditions
-      id: check_stable
+    - name: Validate version format (digits and dots only)
+      id: validate_version
       run: |
-        VERSION_NAME="${{ steps.get_version.outputs.VERSION_NAME }}"
-        STABLE_RELEASE="false"
-        STABLE_REASON=""
-        STABLE_TAG=""
+        VERSION="${{ steps.get_version.outputs.VERSION }}"
         
-        if [[ "$VERSION_NAME" =~ ^([0-9]+)\.([0-9]+)\.0$ ]]; then
-          major="${BASH_REMATCH[1]}"
-          minor="${BASH_REMATCH[2]}"
-          stable_version_shape=true
-          echo "✓ Version format X.Y.0: OK"
+        if [[ "$VERSION" =~ ^[0-9]+(\.[0-9]+)*$ ]]; then
+          echo "VALID=true" >> $GITHUB_OUTPUT
+          echo "✓ Version format OK: $VERSION"
         else
-          stable_version_shape=false
-          STABLE_REASON="version '${VERSION_NAME}' is not a stable X.Y.0 format"
-          echo "✗ Version format X.Y.0: FAILED"
+          echo "VALID=false" >> $GITHUB_OUTPUT
+          echo "INVALID_REASON=Version '$VERSION' contains invalid characters. Only digits and dots allowed (e.g., 1.0, 1.0.0, 2.5.3)" >> $GITHUB_OUTPUT
+          echo "❌ Invalid version format: $VERSION"
+          echo "   Only digits and dots are allowed"
         fi
+    
+    - name: Check if release exists
+      id: check_release
+      if: steps.validate_version.outputs.VALID == 'true'
+      run: |
+        TAG="v${{ steps.get_version.outputs.VERSION }}"
         
-        if [ "$stable_version_shape" = "true" ]; then
-          code_prefix="${major}${minor}"
-          code_min=$((code_prefix * 1000))
-          code_max=$((code_min + 999))
-          
-          VERSION_CODE=$(mvn help:evaluate -Dexpression=versionCode -q -DforceStdout 2>/dev/null || echo "")
-          
-          if [ -n "$VERSION_CODE" ] && [ "$VERSION_CODE" -ge "$code_min" ] && [ "$VERSION_CODE" -le "$code_max" ]; then
-            version_code_matches_version=true
-            echo "✓ Version code $VERSION_CODE in range [$code_min - $code_max]: OK"
-          elif [ -z "$VERSION_CODE" ]; then
-            echo "⚠️ No versionCode found in pom.xml, skipping condition 2"
-            version_code_matches_version=true
-          else
-            version_code_matches_version=false
-            STABLE_REASON="versionCode ${VERSION_CODE} is outside expected range [$code_min - $code_max] for version ${VERSION_NAME}"
-            echo "✗ Version code check: FAILED"
-          fi
-        fi
-        
-        if [ "$stable_version_shape" = "true" ] && [ "$version_code_matches_version" = "true" ]; then
-          STABLE_TAG="v${VERSION_NAME}"
-          
-          if gh release view "$STABLE_TAG" >/dev/null 2>&1; then
-            echo "⚠️ Release $STABLE_TAG already exists: FAILED"
-            STABLE_RELEASE="false"
-            STABLE_REASON="release ${STABLE_TAG} already exists"
-          else
-            echo "✓ Release $STABLE_TAG does not exist: OK"
-            STABLE_RELEASE="true"
-          fi
+        if gh release view "$TAG" >/dev/null 2>&1; then
+          echo "RELEASE_EXISTS=true" >> $GITHUB_OUTPUT
+          echo "RELEASE_EXISTS_MESSAGE=Release $TAG already exists" >> $GITHUB_OUTPUT
+          echo "❌ Release $TAG already exists"
         else
-          echo "ℹ️ Skipping release existence check due to failed conditions 1 and/or 2"
+          echo "RELEASE_EXISTS=false" >> $GITHUB_OUTPUT
+          echo "RELEASE_EXISTS_MESSAGE=Release $TAG does not exist, will create" >> $GITHUB_OUTPUT
+          echo "✅ Release $TAG does not exist"
         fi
-        
-        echo "STABLE_RELEASE=$STABLE_RELEASE" >> $GITHUB_OUTPUT
-        echo "STABLE_REASON=$STABLE_REASON" >> $GITHUB_OUTPUT
-        echo "STABLE_TAG=$STABLE_TAG" >> $GITHUB_OUTPUT
-        echo "major=${major}" >> $GITHUB_OUTPUT
-        echo "minor=${minor}" >> $GITHUB_OUTPUT
-        
-        echo "=========================================="
-        echo "STABLE RELEASE CHECK RESULT:"
-        echo "=========================================="
-        if [ "$STABLE_RELEASE" = "true" ]; then
-          echo "✅ ALL CONDITIONS MET! Stable release $STABLE_TAG will be created"
-        else
-          echo "❌ STABLE RELEASE WILL NOT BE CREATED"
-          echo "Reason: $STABLE_REASON"
-        fi
-        echo "=========================================="
       env:
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     
-    - name: Create Stable Release
-      if: steps.check_stable.outputs.STABLE_RELEASE == 'true'
+    - name: Create Release
+      if: steps.validate_version.outputs.VALID == 'true' && steps.check_release.outputs.RELEASE_EXISTS == 'false'
       uses: softprops/action-gh-release@v1
       with:
-        tag_name: ${{ steps.check_stable.outputs.STABLE_TAG }}
-        name: "Stable Release ${{ steps.get_version.outputs.VERSION_NAME }}"
+        tag_name: ${{ steps.get_version.outputs.TAG }}
+        name: "Release ${{ steps.get_version.outputs.VERSION }}"
         body: |
-          ## Stable Release of Elevator Plugin ${{ steps.get_version.outputs.VERSION_NAME }}
-          
-          ### Release conditions met:
-          - **Version format:** X.Y.0 ✓
-          - **Release check:** No existing release ✓
+          ## Elevator Plugin ${{ steps.get_version.outputs.VERSION }}
           
           ### Installation:
-          1. Download `Elevator-${{ steps.get_version.outputs.VERSION_NAME }}.jar`
+          1. Download `Elevator-${{ steps.get_version.outputs.VERSION }}.jar`
           2. Place into `plugins` folder of your Minecraft server
           3. Restart server or use `/reload`
           
-          ### Build information:
+          ### Build info:
           - **Build #:** ${{ github.run_number }}
           - **Commit:** ${{ github.sha }}
           - **Branch:** ${{ github.ref_name }}
@@ -148,10 +105,12 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     
-    - name: Log skipped stable release
-      if: steps.check_stable.outputs.STABLE_RELEASE == 'false' && github.event_name != 'pull_request'
+    - name: Log invalid version
+      if: steps.validate_version.outputs.VALID == 'false'
       run: |
-        echo "::warning::Stable release not created. Reason: ${{ steps.check_stable.outputs.STABLE_REASON }}"
-        echo "To create a stable release:"
-        echo "  1. Version in pom.xml must be X.Y.0 format (e.g., 1.0.0, 2.5.0)"
-        echo "  2. Release with this tag must not exist yet"
+        echo "::error::${{ steps.validate_version.outputs.INVALID_REASON }}"
+    
+    - name: Log skipped release
+      if: steps.validate_version.outputs.VALID == 'true' && steps.check_release.outputs.RELEASE_EXISTS == 'true'
+      run: |
+        echo "::warning::${{ steps.check_release.outputs.RELEASE_EXISTS_MESSAGE }}"
