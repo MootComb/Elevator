@@ -1,5 +1,11 @@
 # Elevator Plugin
 
+<p align="center">
+  <img src="https://img.shields.io/badge/Minecraft-1.13%2B-brightgreen" alt="Minecraft Version">
+  <img src="https://img.shields.io/badge/Java-8%2B-orange" alt="Java Version">
+  <img src="https://img.shields.io/badge/License-GPL%203.0-blue" alt="License">
+</p>
+
 A comprehensive Minecraft plugin that adds functional elevators and teleporter swap systems to your server.
 
 ## Features
