@@ -1,4 +1,4 @@
-<div align="center"><strong>Elevator</strong></div>
+<div align="center"><strong><span style="font-size: 2em;">Elevator</span></strong></div>
 
 <p align="center">
   <img src="https://img.shields.io/badge/Minecraft-1.13%2B-brightgreen" alt="Minecraft Version">
