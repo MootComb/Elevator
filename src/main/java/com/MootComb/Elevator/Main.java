@@ -120,7 +120,7 @@ public final class Main extends JavaPlugin implements Listener {
         }
 
         getLogger().info("==================================================");
-        getLogger().info("   Elevator v1.0.0 Enabled!");
+        getLogger().info("   Elevator Enabled!");
         getLogger().info("   Elevator blocks: " + elevatorBlocks.size());
         getLogger().info("   Teleporter blocks: " + teleporterBlocks.size());
         getLogger().info("   Max distance: " + blockDistance);
