@@ -49,41 +49,7 @@ jobs:
         name: ${{ steps.get_artifact.outputs.ARTIFACT_ID }}-Build-${{ github.run_number }}
         path: target/*.jar
     
-    - name: Validate version format (digits and dots only)
-      id: validate_version
-      run: |
-        VERSION="${{ steps.get_artifact.outputs.VERSION }}"
-        
-        if [[ "$VERSION" =~ ^[0-9]+(\.[0-9]+)*$ ]]; then
-          echo "VALID=true" >> $GITHUB_OUTPUT
-          echo "✓ Version format OK: $VERSION"
-        else
-          echo "VALID=false" >> $GITHUB_OUTPUT
-          echo "INVALID_REASON=Version '$VERSION' contains invalid characters. Only digits and dots allowed (e.g., 1.0, 1.0.0, 2.5.3)" >> $GITHUB_OUTPUT
-          echo "❌ Invalid version format: $VERSION"
-          echo "   Only digits and dots are allowed"
-        fi
-    
-    - name: Check if release exists
-      id: check_release
-      if: steps.validate_version.outputs.VALID == 'true'
-      run: |
-        TAG="v${{ steps.get_artifact.outputs.VERSION }}"
-        
-        if gh release view "$TAG" >/dev/null 2>&1; then
-          echo "RELEASE_EXISTS=true" >> $GITHUB_OUTPUT
-          echo "RELEASE_EXISTS_MESSAGE=Release $TAG already exists" >> $GITHUB_OUTPUT
-          echo "❌ Release $TAG already exists"
-        else
-          echo "RELEASE_EXISTS=false" >> $GITHUB_OUTPUT
-          echo "RELEASE_EXISTS_MESSAGE=Release $TAG does not exist, will create" >> $GITHUB_OUTPUT
-          echo "✅ Release $TAG does not exist"
-        fi
-      env:
-        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    
     - name: Create Release
-      if: steps.validate_version.outputs.VALID == 'true' && steps.check_release.outputs.RELEASE_EXISTS == 'false'
       uses: softprops/action-gh-release@v1
       with:
         tag_name: ${{ steps.get_artifact.outputs.TAG }}
@@ -102,15 +68,6 @@ jobs:
           target/*.jar
         draft: false
         prerelease: false
+        fail_on_unmatched_files: true
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    
-    - name: Log invalid version
-      if: steps.validate_version.outputs.VALID == 'false'
-      run: |
-        echo "::error::${{ steps.validate_version.outputs.INVALID_REASON }}"
-    
-    - name: Log skipped release
-      if: steps.validate_version.outputs.VALID == 'true' && steps.check_release.outputs.RELEASE_EXISTS == 'true'
-      run: |
-        echo "::warning::${{ steps.check_release.outputs.RELEASE_EXISTS_MESSAGE }}"
