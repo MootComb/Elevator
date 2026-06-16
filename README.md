@@ -225,34 +225,10 @@ Permissions:
 - Both players will swap positions instantly
 - Double-click the same teleporter to cancel the request
 
-## Color Codes
-
-The plugin supports HEX color codes using the format `&#RRGGBB`:
-
-```
-&#FF5555 - Red
-&#55FF55 - Green  
-&#5555FF - Blue
-&#FFAA00 - Orange
-&#55FFFF - Cyan
-&#FF55FF - Pink
-&#FFFF55 - Yellow
-```
-
-You can also use standard Minecraft color codes with `&`:
-```
-&a - Green
-&c - Red
-&6 - Gold
-&b - Aqua
-&d - Light Purple
-&e - Yellow
-```
-
 ## Support
 
 For issues or suggestions, please create an issue on the [GitHub repository](https://github.com/MootComb/Elevator/issues).
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the GNU General Public License v3.0 - see the LICENSE file for details.
