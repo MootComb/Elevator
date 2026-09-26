@@ -33,12 +33,7 @@ Teleporter:
   UsageSound: entity.enderman.teleport
   AllowUnsafe: true
   AllowCrossWorlds: true
-
-  # If true, ANY block can be bound with an ender pearl.
-  # If false, only BlockTypes below (or permission below) can be bound.
   AllowAllBlocks: false
-
-  # Permission that bypasses the BlockTypes list (empty = disabled)
   BlockTypesPermission: ""
 
   BlockTypes:
@@ -46,10 +41,14 @@ Teleporter:
     - CRYING_OBSIDIAN
     - LIGHT_BLUE_GLAZED_TERRACOTTA
 
+  DistanceCheck:
+    Enabled: true
+    MaxDistance: 10000.0
+
 Cooldown:
   EnableCooldown: false
   Time: 30
-  Locale: "&#FF5555Elevator is on cooldown. Please wait for another %time% seconds!"
+  Locale: "&#FF5300Elevator &7| &fCooldown: %time%s"
   MessageType: SUBTITLE
 
 ElevatorLocale:
@@ -58,9 +57,9 @@ ElevatorLocale:
     FadeIn: 10
     Stay: 40
     FadeOut: 10
-  ElevatorUp: "&#55FF55Going up"
-  ElevatorDown: "&#FFAA00Going down"
-  ElevatorDanger: "&#FF5555Danger! Unsafe location!"
+  ElevatorUp: "&#FF5300Elevator &7| &fGoing up"
+  ElevatorDown: "&#FF5300Elevator &7| &fGoing down"
+  ElevatorDanger: "&#FF5300Elevator &7| &fDanger! Unsafe location!"
 
 TeleporterLocale:
   MessageType: SUBTITLE
@@ -82,6 +81,7 @@ Permissions:
   BreakBypass: "elevator.break.bypass"
 
 # Access values: OWNER, MEMBERS, OWNERS, ALL
+# Teleport Location values: TOP, CURRENT
 TeleporterBlock:
   Teleport:
     Enabled: true
@@ -98,3 +98,44 @@ TeleporterBlock:
     CheckPermission: false
     Permission: "elevator.break"
     DefaultAccess: "ALL"
+
+GUI:
+  Main:
+    Title: "&7Teleporter Block"
+  Members:
+    Title: "&7Members & Owners"
+  List:
+    Title: "&7%list%"
+
+Messages:
+  BlockBound: "&#FF5300Elevator &7| &fBlock bound! Set an ID to link it."
+  IdPrompt: "&#FF5300Elevator &7| &fType a number (1-99999) or 'cancel'."
+  IdInvalid: "&#FF5300Elevator &7| &fInvalid number."
+  IdRange: "&#FF5300Elevator &7| &fNumber must be 1-99999."
+  IdUsed: "&#FF5300Elevator &7| &fThis ID is already used by 2 blocks."
+  IdSet: "&#FF5300Elevator &7| &fID set to %id%"
+  ItemPrompt: "&#FF5300Elevator &7| &fType item name or 'no' to disable."
+  ItemDisabled: "&#FF5300Elevator &7| &fItem requirement disabled."
+  ItemSet: "&#FF5300Elevator &7| &fRequired item: %name%"
+  Cancelled: "&#FF5300Elevator &7| &fCancelled."
+  NoPermission: "&#FF5300Elevator &7| &fNo permission."
+  BlockGone: "&#FF5300Elevator &7| &fBlock no longer exists."
+  PlayerNotFound: "&#FF5300Elevator &7| &fPlayer not found."
+  PlayerAdded: "&#FF5300Elevator &7| &fAdded %name%"
+  TeleportSuccess: "&#FF5300Elevator &7| &fTeleported!"
+  NoPair: "&#FF5300Elevator &7| &fNo paired block found."
+  NoCrossWorld: "&#FF5300Elevator &7| &fCannot teleport across worlds."
+  NoBlockInSight: "&#FF5300Elevator &7| &fNo block in sight."
+  NotTeleporter: "&#FF5300Elevator &7| &fThis block is not a teleporter."
+  NoBlocksOwned: "&#FF5300Elevator &7| &fYou have no teleporter blocks."
+  YourBlocks: "&#FF5300Elevator &7| &fYour teleporter blocks:"
+  RemoveUsage: "&#FF5300Elevator &7| &fUsage: /elevator remove <id>"
+  RemoveInvalid: "&#FF5300Elevator &7| &fInvalid ID."
+  RemoveNone: "&#FF5300Elevator &7| &fNo blocks with that ID."
+  RemoveNotOwner: "&#FF5300Elevator &7| &fYou do not own any block with that ID."
+  RemoveSuccess: "&#FF5300Elevator &7| &fRemoved %count% block(s) with ID %id%"
+  UnknownSub: "&#FF5300Elevator &7| &fUnknown subcommand."
+  PlayersOnly: "&#FF5300Elevator &7| &fPlayers only."
+  Reloaded: "&#FF5300Elevator &7| &fConfig reloaded!"
+  ListPrompt: "&#FF5300Elevator &7| &fType player name or 'cancel'."
+  HeaderInfo: "&#FF5300Elevator &7| &fBlock info:"
