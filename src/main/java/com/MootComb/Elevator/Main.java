@@ -26,7 +26,8 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.event.player.PlayerLaunchProjectileEvent;
+import org.bukkit.event.entity.ProjectileLaunchEvent;
+import org.bukkit.projectiles.ProjectileSource;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerToggleSneakEvent;
@@ -1024,11 +1025,15 @@ public final class Main extends JavaPlugin implements Listener {
     }
 
     @EventHandler(priority = EventPriority.LOWEST)
-    public void onProjectileLaunch(PlayerLaunchProjectileEvent event) {
-        if (!(event.getProjectile() instanceof EnderPearl)) return;
-        Player player = event.getPlayer();
+    public void onProjectileLaunch(ProjectileLaunchEvent event) {
+        if (!(event.getEntity() instanceof EnderPearl)) return;
+        EnderPearl pearl = (EnderPearl) event.getEntity();
+        ProjectileSource source = pearl.getShooter();
+        if (!(source instanceof Player)) return;
+        Player player = (Player) source;
         if (pendingPearlCancel.contains(player.getUniqueId())) {
             event.setCancelled(true);
+            pearl.remove();
             pendingPearlCancel.remove(player.getUniqueId());
         }
     }
