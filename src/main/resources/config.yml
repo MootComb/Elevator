@@ -27,7 +27,7 @@ Elevator:
     - WHITE_CARPET
     - YELLOW_CARPET
   BlockDistance: 50
-  EnableParticle: true
+  EnableParticle: false
   ParticleType: SPELL_WITCH
   ParticleCount: 20
   UsageSound: entity.enderman.teleport
@@ -38,11 +38,11 @@ Elevator:
 # TELEPORTER SETTINGS
 # ============================================
 Teleporter:
-  EnableParticle: true
+  EnableParticle: false
   UsageSound: entity.enderman.teleport
   AllowUnsafe: true
   AllowCrossWorlds: true
-  AllowAllBlocks: false
+  AllowAllBlocks: true
   BlockTypesPermission: ""
   BlockTypes:
     - SEA_LANTERN
@@ -153,11 +153,11 @@ Messages:
   ViewUsage: "&fUsage: /elevator view <all|owner|member>"
   ViewUsageType: CHAT
   TeleportSuccess: "&fTeleported!"
-  TeleportSuccessType: SUBTITLE
+  TeleportSuccessType: NONE
   ElevatorUp: "&fGoing up"
-  ElevatorUpType: SUBTITLE
+  ElevatorUpType: NONE
   ElevatorDown: "&fGoing down"
-  ElevatorDownType: SUBTITLE
+  ElevatorDownType: NONE
   ElevatorDanger: "&fDanger! Unsafe location!"
   ElevatorDangerType: SUBTITLE
   NoPair: "&fNo paired block found."
@@ -177,11 +177,11 @@ Messages:
 Titles:
   Elevator:
     FadeIn: 10
-    Stay: 40
+    Stay: 30
     FadeOut: 10
   Teleporter:
     FadeIn: 10
-    Stay: 60
+    Stay: 30
     FadeOut: 10
 
 # ============================================
@@ -332,8 +332,22 @@ GUI:
             - "&fToggle hologram above block"
           left_click_commands:
             - "[elevator_toggle] hologram"
+        redirect:
+          material: COMPASS
+          slot: 25
+          display_name: "&#FF5300Redirect: %redirect%"
+          lore:
+            - "&fClick to open chain editor"
+          left_click_commands:
+            - "[opengui] redirect"
+        close:
+          material: BARRIER
+          slot: 49
+          display_name: "&#FF5300Close"
+          left_click_commands:
+            - "[close]"
         teleport_access:
-          material: PLAYER_HEAD
+          material: CHEST
           slot: 29
           display_name: "&#FF5300Teleport Access: %teleport_access%"
           lore:
@@ -352,7 +366,7 @@ GUI:
             - "[elevator_toggle] manage_access"
         break_access:
           material: DIAMOND_PICKAXE
-          slot: 31
+          slot: 32
           display_name: "&#FF5300Break Access: %break_access%"
           lore:
             - "&fClick to cycle"
@@ -360,8 +374,8 @@ GUI:
           left_click_commands:
             - "[elevator_toggle] break_access"
         members:
-          material: CHEST
-          slot: 32
+          material: PLAYER_HEAD
+          slot: 31
           display_name: "&#FF5300Members & Governings"
           lore:
             - "&fManage local and global lists"
@@ -375,20 +389,6 @@ GUI:
             - "&fClick to set / disable"
           left_click_commands:
             - "[elevator_input] SET_PASSWORD"
-        redirect:
-          material: ENDER_EYE
-          slot: 34
-          display_name: "&#FF5300Redirect: %redirect%"
-          lore:
-            - "&fClick to open chain editor"
-          left_click_commands:
-            - "[opengui] redirect"
-        close:
-          material: BARRIER
-          slot: 49
-          display_name: "&#FF5300Close"
-          left_click_commands:
-            - "[close]"
 
     members:
       title: "&8Members & Governings"
