@@ -54,13 +54,14 @@ import java.util.regex.Pattern;
 public final class Main extends JavaPlugin implements Listener {
     private static Main instance;
     public enum MessageType { CHAT, TITLE, SUBTITLE, NONE }
-    public enum AccessLevel { OWNER, MEMBERS, OWNERS, ALL }
+    public enum AccessLevel { OWNER, MEMBERS, GOVERNINGS, ALL }
     public enum ClickType { LEFT, RIGHT }
     public enum TeleportLocation { TOP, CURRENT }
     private static final int DOUBLE_CLICK_DELAY_TICKS = 5;
     private static final int SNEAK_CHECK_DELAY_TICKS = 1;
     private static final int DEFAULT_END_ROD_COUNT = 5;
     private static final Pattern HEX_PATTERN = Pattern.compile("&#([A-Fa-f0-9]{6})");
+    private static final Pattern SRGB_PATTERN = Pattern.compile("<#([A-Fa-f0-9]{6})>");
     private static final String PREFIX = "&#FF5300Elevator &7| &f";
     private Set<Material> elevatorBlocks = new HashSet<>();
     private int blockDistance;
@@ -151,7 +152,31 @@ public final class Main extends JavaPlugin implements Listener {
     private boolean blockNamingEnabled;
     private int blockNamingMaxLength;
     private String blockNamingDefaultName;
+    private int guiMainSize;
     private String guiMainTitle;
+    private int guiMainSlotId;
+    private int guiMainSlotClick;
+    private int guiMainSlotSneak;
+    private int guiMainSlotRequiredItem;
+    private int guiMainSlotLocation;
+    private int guiMainSlotName;
+    private int guiMainSlotHologram;
+    private int guiMainSlotTeleportAccess;
+    private int guiMainSlotManageAccess;
+    private int guiMainSlotBreakAccess;
+    private int guiMainSlotMembers;
+    private int guiMainSlotClose;
+    private boolean guiFeatureId;
+    private boolean guiFeatureClick;
+    private boolean guiFeatureSneak;
+    private boolean guiFeatureRequiredItem;
+    private boolean guiFeatureLocation;
+    private boolean guiFeatureName;
+    private boolean guiFeatureHologram;
+    private boolean guiFeatureTeleportAccess;
+    private boolean guiFeatureManageAccess;
+    private boolean guiFeatureBreakAccess;
+    private boolean guiFeatureMembers;
     private String guiMainIdItem;
     private String guiMainIdItemEmpty;
     private String guiMainIdItemLore;
@@ -171,8 +196,6 @@ public final class Main extends JavaPlugin implements Listener {
     private String guiMainNameItemLore;
     private String guiMainHologramItem;
     private String guiMainHologramItemLore;
-    private String guiMainHologramColorItem;
-    private String guiMainHologramColorItemLore;
     private String guiMainTeleportAccessItem;
     private String guiMainTeleportAccessItemLore;
     private String guiMainTeleportAccessItemLore2;
@@ -185,13 +208,22 @@ public final class Main extends JavaPlugin implements Listener {
     private String guiMainMembersItem;
     private String guiMainMembersItemLore;
     private String guiMainCloseItem;
+    private int guiMembersSize;
     private String guiMembersTitle;
+    private int guiMembersSlotLocalMembers;
+    private int guiMembersSlotLocalGovernings;
+    private int guiMembersSlotGlobalMembers;
+    private int guiMembersSlotGlobalGovernings;
+    private int guiMembersSlotBack;
+    private boolean guiFeatureMembersLocal;
+    private boolean guiFeatureMembersGlobal;
     private String guiMembersLocalMembers;
-    private String guiMembersLocalOwners;
+    private String guiMembersLocalGovernings;
     private String guiMembersGlobalMembers;
-    private String guiMembersGlobalOwners;
+    private String guiMembersGlobalGovernings;
     private String guiMembersClickManage;
     private String guiMembersBack;
+    private int guiListSize;
     private String guiListTitle;
     private String guiListPlayerItem;
     private String guiListPlayerItemLore;
@@ -219,12 +251,6 @@ public final class Main extends JavaPlugin implements Listener {
     private MessageType msgNamePromptType;
     private String msgNameSet;
     private MessageType msgNameSetType;
-    private String msgColorPrompt;
-    private MessageType msgColorPromptType;
-    private String msgColorSet;
-    private MessageType msgColorSetType;
-    private String msgColorInvalid;
-    private MessageType msgColorInvalidType;
     private String msgCancelled;
     private MessageType msgCancelledType;
     private String msgNoPermission;
@@ -279,7 +305,7 @@ public final class Main extends JavaPlugin implements Listener {
     private final Map<Integer, Set<String>> idIndex = new ConcurrentHashMap<>();
     private final Map<UUID, List<String>> playerBlocks = new ConcurrentHashMap<>();
     private final Map<UUID, Set<UUID>> globalMembers = new ConcurrentHashMap<>();
-    private final Map<UUID, Set<UUID>> globalOwners = new ConcurrentHashMap<>();
+    private final Map<UUID, Set<UUID>> globalGovernings = new ConcurrentHashMap<>();
     private final Map<UUID, ChatInputSession> chatSessions = new HashMap<>();
     private final Map<UUID, Inventory> openGuis = new HashMap<>();
     private final Map<UUID, GuiContext> guiContexts = new HashMap<>();
@@ -309,9 +335,8 @@ public final class Main extends JavaPlugin implements Listener {
         public float customDestinationPitch;
         public String customName = "";
         public boolean hologramEnabled = false;
-        public String hologramColor = "&#FF5300";
         public Set<UUID> members = new HashSet<>();
-        public Set<UUID> owners = new HashSet<>();
+        public Set<UUID> governings = new HashSet<>();
         public String key() { return world + ":" + x + ":" + y + ":" + z; }
     }
 
@@ -375,14 +400,29 @@ public final class Main extends JavaPlugin implements Listener {
 
     private String color(String message) {
         if (message == null) return "";
-        Matcher matcher = HEX_PATTERN.matcher(message);
+        String msg = message;
+        Matcher matcher = HEX_PATTERN.matcher(msg);
         StringBuffer buffer = new StringBuffer();
         while (matcher.find()) {
             String hex = matcher.group(1);
             matcher.appendReplacement(buffer, net.md_5.bungee.api.ChatColor.of("#" + hex).toString());
         }
         matcher.appendTail(buffer);
-        return ChatColor.translateAlternateColorCodes('&', buffer.toString());
+        msg = buffer.toString();
+        Matcher srgb = SRGB_PATTERN.matcher(msg);
+        StringBuffer buffer2 = new StringBuffer();
+        while (srgb.find()) {
+            String hex = srgb.group(1);
+            srgb.appendReplacement(buffer2, net.md_5.bungee.api.ChatColor.of("#" + hex).toString());
+        }
+        srgb.appendTail(buffer2);
+        msg = buffer2.toString();
+        return ChatColor.translateAlternateColorCodes('&', msg);
+    }
+
+    private String stripColor(String message) {
+        if (message == null) return "";
+        return ChatColor.stripColor(color(message));
     }
 
     private String prefixed(String message) { return color(PREFIX + message); }
@@ -457,7 +497,31 @@ public final class Main extends JavaPlugin implements Listener {
         teleporterMissingItemType = msgType("TeleporterLocale.MissingItemType", MessageType.CHAT);
         teleporterDistanceTooFarMessage = getConfig().getString("TeleporterLocale.DistanceTooFar", "");
         teleporterDistanceTooFarType = msgType("TeleporterLocale.DistanceTooFarType", MessageType.CHAT);
+        guiMainSize = getConfig().getInt("GUI.Main.Size", 54);
         guiMainTitle = getConfig().getString("GUI.Main.Title", "&7Teleporter Block");
+        guiMainSlotId = getConfig().getInt("GUI.Main.Slot.Id", 4);
+        guiMainSlotClick = getConfig().getInt("GUI.Main.Slot.Click", 19);
+        guiMainSlotSneak = getConfig().getInt("GUI.Main.Slot.Sneak", 20);
+        guiMainSlotRequiredItem = getConfig().getInt("GUI.Main.Slot.RequiredItem", 21);
+        guiMainSlotLocation = getConfig().getInt("GUI.Main.Slot.Location", 22);
+        guiMainSlotName = getConfig().getInt("GUI.Main.Slot.Name", 23);
+        guiMainSlotHologram = getConfig().getInt("GUI.Main.Slot.Hologram", 24);
+        guiMainSlotTeleportAccess = getConfig().getInt("GUI.Main.Slot.TeleportAccess", 29);
+        guiMainSlotManageAccess = getConfig().getInt("GUI.Main.Slot.ManageAccess", 30);
+        guiMainSlotBreakAccess = getConfig().getInt("GUI.Main.Slot.BreakAccess", 31);
+        guiMainSlotMembers = getConfig().getInt("GUI.Main.Slot.Members", 32);
+        guiMainSlotClose = getConfig().getInt("GUI.Main.Slot.Close", 49);
+        guiFeatureId = getConfig().getBoolean("GUI.Features.Id", true);
+        guiFeatureClick = getConfig().getBoolean("GUI.Features.Click", true);
+        guiFeatureSneak = getConfig().getBoolean("GUI.Features.Sneak", true);
+        guiFeatureRequiredItem = getConfig().getBoolean("GUI.Features.RequiredItem", true);
+        guiFeatureLocation = getConfig().getBoolean("GUI.Features.Location", true);
+        guiFeatureName = getConfig().getBoolean("GUI.Features.Name", true);
+        guiFeatureHologram = getConfig().getBoolean("GUI.Features.Hologram", true);
+        guiFeatureTeleportAccess = getConfig().getBoolean("GUI.Features.TeleportAccess", true);
+        guiFeatureManageAccess = getConfig().getBoolean("GUI.Features.ManageAccess", true);
+        guiFeatureBreakAccess = getConfig().getBoolean("GUI.Features.BreakAccess", true);
+        guiFeatureMembers = getConfig().getBoolean("GUI.Features.Members", true);
         guiMainIdItem = getConfig().getString("GUI.Main.IdItem", "&#FF5300ID: %id%");
         guiMainIdItemEmpty = getConfig().getString("GUI.Main.IdItemEmpty", "&#FF5300ID: Not set");
         guiMainIdItemLore = getConfig().getString("GUI.Main.IdItemLore", "&7Click to change ID");
@@ -474,30 +538,37 @@ public final class Main extends JavaPlugin implements Listener {
         guiMainLocationItemLoreClick = getConfig().getString("GUI.Main.LocationItemLoreClick", "&7Click to cycle");
         guiMainNameItem = getConfig().getString("GUI.Main.NameItem", "&#FF5300Name: %value%");
         guiMainNameItemEmpty = getConfig().getString("GUI.Main.NameItemEmpty", "&#FF5300Name: Not set");
-        guiMainNameItemLore = getConfig().getString("GUI.Main.NameItemLore", "&7Click to rename");
+        guiMainNameItemLore = getConfig().getString("GUI.Main.NameItemLore", "&7Click to rename (supports &f&7&#RRGGBB <#RRGGBB>)");
         guiMainHologramItem = getConfig().getString("GUI.Main.HologramItem", "&#FF5300Hologram: %value%");
         guiMainHologramItemLore = getConfig().getString("GUI.Main.HologramItemLore", "&7Toggle hologram above block");
-        guiMainHologramColorItem = getConfig().getString("GUI.Main.HologramColorItem", "&#FF5300Hologram Color: %value%");
-        guiMainHologramColorItemLore = getConfig().getString("GUI.Main.HologramColorItemLore", "&7Click to change color");
         guiMainTeleportAccessItem = getConfig().getString("GUI.Main.TeleportAccessItem", "&#FF5300Teleport Access: %value%");
         guiMainTeleportAccessItemLore = getConfig().getString("GUI.Main.TeleportAccessItemLore", "&7Click to cycle");
-        guiMainTeleportAccessItemLore2 = getConfig().getString("GUI.Main.TeleportAccessItemLore2", "&7OWNER / MEMBERS / OWNERS / ALL");
+        guiMainTeleportAccessItemLore2 = getConfig().getString("GUI.Main.TeleportAccessItemLore2", "&7OWNER / MEMBERS / GOVERNINGS / ALL");
         guiMainManageAccessItem = getConfig().getString("GUI.Main.ManageAccessItem", "&#FF5300Manage Access: %value%");
         guiMainManageAccessItemLore = getConfig().getString("GUI.Main.ManageAccessItemLore", "&7Click to cycle");
-        guiMainManageAccessItemLore2 = getConfig().getString("GUI.Main.ManageAccessItemLore2", "&7OWNER / OWNERS / ALL");
+        guiMainManageAccessItemLore2 = getConfig().getString("GUI.Main.ManageAccessItemLore2", "&7OWNER / GOVERNINGS / ALL");
         guiMainBreakAccessItem = getConfig().getString("GUI.Main.BreakAccessItem", "&#FF5300Break Access: %value%");
         guiMainBreakAccessItemLore = getConfig().getString("GUI.Main.BreakAccessItemLore", "&7Click to cycle");
-        guiMainBreakAccessItemLore2 = getConfig().getString("GUI.Main.BreakAccessItemLore2", "&7OWNER / MEMBERS / OWNERS / ALL");
-        guiMainMembersItem = getConfig().getString("GUI.Main.MembersItem", "&#FF5300Members & Owners");
+        guiMainBreakAccessItemLore2 = getConfig().getString("GUI.Main.BreakAccessItemLore2", "&7OWNER / MEMBERS / GOVERNINGS / ALL");
+        guiMainMembersItem = getConfig().getString("GUI.Main.MembersItem", "&#FF5300Members & Governings");
         guiMainMembersItemLore = getConfig().getString("GUI.Main.MembersItemLore", "&7Manage local and global lists");
         guiMainCloseItem = getConfig().getString("GUI.Main.CloseItem", "&#FF5300Close");
-        guiMembersTitle = getConfig().getString("GUI.Members.Title", "&7Members & Owners");
+        guiMembersSize = getConfig().getInt("GUI.Members.Size", 54);
+        guiMembersTitle = getConfig().getString("GUI.Members.Title", "&7Members & Governings");
+        guiMembersSlotLocalMembers = getConfig().getInt("GUI.Members.Slot.LocalMembers", 20);
+        guiMembersSlotLocalGovernings = getConfig().getInt("GUI.Members.Slot.LocalGovernings", 21);
+        guiMembersSlotGlobalMembers = getConfig().getInt("GUI.Members.Slot.GlobalMembers", 23);
+        guiMembersSlotGlobalGovernings = getConfig().getInt("GUI.Members.Slot.GlobalGovernings", 24);
+        guiMembersSlotBack = getConfig().getInt("GUI.Members.Slot.Back", 49);
+        guiFeatureMembersLocal = getConfig().getBoolean("GUI.Members.Features.Local", true);
+        guiFeatureMembersGlobal = getConfig().getBoolean("GUI.Members.Features.Global", true);
         guiMembersLocalMembers = getConfig().getString("GUI.Members.LocalMembers", "&#FF5300Local Members: %count%");
-        guiMembersLocalOwners = getConfig().getString("GUI.Members.LocalOwners", "&#FF5300Local Owners: %count%");
+        guiMembersLocalGovernings = getConfig().getString("GUI.Members.LocalGovernings", "&#FF5300Local Governings: %count%");
         guiMembersGlobalMembers = getConfig().getString("GUI.Members.GlobalMembers", "&#FF5300Global Members: %count%");
-        guiMembersGlobalOwners = getConfig().getString("GUI.Members.GlobalOwners", "&#FF5300Global Owners: %count%");
+        guiMembersGlobalGovernings = getConfig().getString("GUI.Members.GlobalGovernings", "&#FF5300Global Governings: %count%");
         guiMembersClickManage = getConfig().getString("GUI.Members.ClickManage", "&7Click to manage");
         guiMembersBack = getConfig().getString("GUI.Members.Back", "&#FF5300Back");
+        guiListSize = getConfig().getInt("GUI.List.Size", 54);
         guiListTitle = getConfig().getString("GUI.List.Title", "&7%list%");
         guiListPlayerItem = getConfig().getString("GUI.List.PlayerItem", "&#FF5300%name%");
         guiListPlayerItemLore = getConfig().getString("GUI.List.PlayerItemLore", "&7Click to remove");
@@ -525,12 +596,6 @@ public final class Main extends JavaPlugin implements Listener {
         msgNamePromptType = msgType("Messages.NamePromptType", MessageType.CHAT);
         msgNameSet = getConfig().getString("Messages.NameSet", "");
         msgNameSetType = msgType("Messages.NameSetType", MessageType.CHAT);
-        msgColorPrompt = getConfig().getString("Messages.ColorPrompt", "");
-        msgColorPromptType = msgType("Messages.ColorPromptType", MessageType.CHAT);
-        msgColorSet = getConfig().getString("Messages.ColorSet", "");
-        msgColorSetType = msgType("Messages.ColorSetType", MessageType.CHAT);
-        msgColorInvalid = getConfig().getString("Messages.ColorInvalid", "");
-        msgColorInvalidType = msgType("Messages.ColorInvalidType", MessageType.CHAT);
         msgCancelled = getConfig().getString("Messages.Cancelled", "");
         msgCancelledType = msgType("Messages.CancelledType", MessageType.CHAT);
         msgNoPermission = getConfig().getString("Messages.NoPermission", "");
@@ -585,16 +650,16 @@ public final class Main extends JavaPlugin implements Listener {
         viewPermOwner = getConfig().getString("View.PermissionOwner", "elevator.view.owner");
         viewPermMember = getConfig().getString("View.PermissionMember", "elevator.view.member");
         hologramsDefaultEnabled = getConfig().getBoolean("Holograms.DefaultEnabled", false);
-        hologramsDefaultColor = getConfig().getString("Holograms.DefaultColor", "&#FF5300");
+        hologramsDefaultColor = getConfig().getString("Holograms.DefaultColor", "&f");
         hologramsViewDistance = getConfig().getInt("Holograms.ViewDistance", 16);
         hologramsUpdateInterval = getConfig().getInt("Holograms.UpdateIntervalTicks", 20);
-        hologramsShowId = getConfig().getBoolean("Holograms.ShowId", true);
+        hologramsShowId = getConfig().getBoolean("Holograms.ShowId", false);
         hologramsShowName = getConfig().getBoolean("Holograms.ShowName", true);
-        hologramsFormat = getConfig().getString("Holograms.Format", "%name% &7| &fID: %id%");
-        hologramsFormatNoName = getConfig().getString("Holograms.FormatNoName", "&7ID: %id%");
+        hologramsFormat = getConfig().getString("Holograms.Format", "%name%");
+        hologramsFormatNoName = getConfig().getString("Holograms.FormatNoName", "");
         hologramsLineHeight = getConfig().getDouble("Holograms.LineHeight", 0.3);
         blockNamingEnabled = getConfig().getBoolean("BlockNaming.Enabled", true);
-        blockNamingMaxLength = getConfig().getInt("BlockNaming.MaxLength", 32);
+        blockNamingMaxLength = getConfig().getInt("BlockNaming.MaxLength", 64);
         blockNamingDefaultName = getConfig().getString("BlockNaming.DefaultName", "");
         disabledWorlds.clear();
         disabledWorlds.addAll(getConfig().getStringList("DisabledWorlds"));
@@ -657,7 +722,7 @@ public final class Main extends JavaPlugin implements Listener {
         idIndex.clear();
         playerBlocks.clear();
         globalMembers.clear();
-        globalOwners.clear();
+        globalGovernings.clear();
         blocksFile = new File(getDataFolder(), "blocks.yml");
         if (!blocksFile.exists()) {
             try { getDataFolder().mkdirs(); blocksFile.createNewFile(); }
@@ -694,9 +759,9 @@ public final class Main extends JavaPlugin implements Listener {
                 data.customDestinationPitch = (float) sec.getDouble("CustomDestination.Pitch", 0);
                 data.customName = sec.getString("CustomName", "");
                 data.hologramEnabled = sec.getBoolean("HologramEnabled", hologramsDefaultEnabled);
-                data.hologramColor = sec.getString("HologramColor", hologramsDefaultColor);
                 for (String member : sec.getStringList("Members")) { try { data.members.add(UUID.fromString(member)); } catch (IllegalArgumentException ignored) {} }
-                for (String owner : sec.getStringList("Owners")) { try { data.owners.add(UUID.fromString(owner)); } catch (IllegalArgumentException ignored) {} }
+                for (String gov : sec.getStringList("Governings")) { try { data.governings.add(UUID.fromString(gov)); } catch (IllegalArgumentException ignored) {} }
+                for (String gov : sec.getStringList("Owners")) { try { data.governings.add(UUID.fromString(gov)); } catch (IllegalArgumentException ignored) {} }
                 blockDataMap.put(data.key(), data);
                 idIndex.computeIfAbsent(data.id, k -> ConcurrentHashMap.newKeySet()).add(data.key());
                 playerBlocks.computeIfAbsent(data.owner, k -> new ArrayList<>()).add(data.key());
@@ -711,10 +776,11 @@ public final class Main extends JavaPlugin implements Listener {
                 if (pSec == null) continue;
                 Set<UUID> members = ConcurrentHashMap.newKeySet();
                 for (String m : pSec.getStringList("GlobalMembers")) { try { members.add(UUID.fromString(m)); } catch (IllegalArgumentException ignored) {} }
-                Set<UUID> owners = ConcurrentHashMap.newKeySet();
-                for (String o : pSec.getStringList("GlobalOwners")) { try { owners.add(UUID.fromString(o)); } catch (IllegalArgumentException ignored) {} }
+                Set<UUID> governings = ConcurrentHashMap.newKeySet();
+                for (String o : pSec.getStringList("GlobalGovernings")) { try { governings.add(UUID.fromString(o)); } catch (IllegalArgumentException ignored) {} }
+                for (String o : pSec.getStringList("GlobalOwners")) { try { governings.add(UUID.fromString(o)); } catch (IllegalArgumentException ignored) {} }
                 if (!members.isEmpty()) globalMembers.put(uuid, members);
-                if (!owners.isEmpty()) globalOwners.put(uuid, owners);
+                if (!governings.isEmpty()) globalGovernings.put(uuid, governings);
             }
         }
     }
@@ -747,28 +813,27 @@ public final class Main extends JavaPlugin implements Listener {
             blocksConfig.set(path + ".CustomDestination.Pitch", data.customDestinationPitch);
             blocksConfig.set(path + ".CustomName", data.customName);
             blocksConfig.set(path + ".HologramEnabled", data.hologramEnabled);
-            blocksConfig.set(path + ".HologramColor", data.hologramColor);
             List<String> members = new ArrayList<>();
             for (UUID u : data.members) members.add(u.toString());
             blocksConfig.set(path + ".Members", members);
-            List<String> owners = new ArrayList<>();
-            for (UUID u : data.owners) owners.add(u.toString());
-            blocksConfig.set(path + ".Owners", owners);
+            List<String> governings = new ArrayList<>();
+            for (UUID u : data.governings) governings.add(u.toString());
+            blocksConfig.set(path + ".Governings", governings);
         }
         blocksConfig.set("Players", null);
         Set<UUID> allPlayers = new HashSet<>();
         allPlayers.addAll(globalMembers.keySet());
-        allPlayers.addAll(globalOwners.keySet());
+        allPlayers.addAll(globalGovernings.keySet());
         for (UUID uuid : allPlayers) {
             String path = "Players." + uuid.toString();
             List<String> members = new ArrayList<>();
             Set<UUID> m = globalMembers.get(uuid);
             if (m != null) for (UUID u : m) members.add(u.toString());
             blocksConfig.set(path + ".GlobalMembers", members);
-            List<String> owners = new ArrayList<>();
-            Set<UUID> o = globalOwners.get(uuid);
-            if (o != null) for (UUID u : o) owners.add(u.toString());
-            blocksConfig.set(path + ".GlobalOwners", owners);
+            List<String> governings = new ArrayList<>();
+            Set<UUID> o = globalGovernings.get(uuid);
+            if (o != null) for (UUID u : o) governings.add(u.toString());
+            blocksConfig.set(path + ".GlobalGovernings", governings);
         }
         try { blocksConfig.save(blocksFile); }
         catch (IOException e) { getLogger().severe("Could not save blocks.yml: " + e.getMessage()); }
@@ -1045,8 +1110,8 @@ public final class Main extends JavaPlugin implements Listener {
         if (!item.hasItemMeta()) return false;
         ItemMeta meta = item.getItemMeta();
         if (meta == null || !meta.hasDisplayName()) return false;
-        String display = ChatColor.stripColor(meta.getDisplayName());
-        String required = ChatColor.stripColor(color(requiredName));
+        String display = stripColor(meta.getDisplayName());
+        String required = stripColor(requiredName);
         return display.equalsIgnoreCase(required);
     }
 
@@ -1087,7 +1152,6 @@ public final class Main extends JavaPlugin implements Listener {
         data.teleportLocation = TeleportLocation.TOP;
         data.customName = blockNamingDefaultName;
         data.hologramEnabled = hologramsDefaultEnabled;
-        data.hologramColor = hologramsDefaultColor;
         data.id = 0;
         blockDataMap.put(key, data);
         playerBlocks.computeIfAbsent(player.getUniqueId(), k -> new ArrayList<>()).add(key);
@@ -1171,10 +1235,10 @@ public final class Main extends JavaPlugin implements Listener {
             Set<UUID> global = globalMembers.get(data.owner);
             return global != null && global.contains(player.getUniqueId());
         }
-        if (level == AccessLevel.OWNERS) {
+        if (level == AccessLevel.GOVERNINGS) {
             if (player.getUniqueId().equals(data.owner)) return true;
-            if (data.owners.contains(player.getUniqueId())) return true;
-            Set<UUID> global = globalOwners.get(data.owner);
+            if (data.governings.contains(player.getUniqueId())) return true;
+            Set<UUID> global = globalGovernings.get(data.owner);
             return global != null && global.contains(player.getUniqueId());
         }
         return false;
@@ -1186,10 +1250,10 @@ public final class Main extends JavaPlugin implements Listener {
         AccessLevel level = data.manageAccess;
         if (level == AccessLevel.ALL) return true;
         if (level == AccessLevel.OWNER) return player.getUniqueId().equals(data.owner);
-        if (level == AccessLevel.OWNERS) {
+        if (level == AccessLevel.GOVERNINGS) {
             if (player.getUniqueId().equals(data.owner)) return true;
-            if (data.owners.contains(player.getUniqueId())) return true;
-            Set<UUID> global = globalOwners.get(data.owner);
+            if (data.governings.contains(player.getUniqueId())) return true;
+            Set<UUID> global = globalGovernings.get(data.owner);
             return global != null && global.contains(player.getUniqueId());
         }
         return false;
@@ -1207,44 +1271,51 @@ public final class Main extends JavaPlugin implements Listener {
             Set<UUID> global = globalMembers.get(data.owner);
             return global != null && global.contains(player.getUniqueId());
         }
-        if (level == AccessLevel.OWNERS) {
+        if (level == AccessLevel.GOVERNINGS) {
             if (player.getUniqueId().equals(data.owner)) return true;
-            if (data.owners.contains(player.getUniqueId())) return true;
-            Set<UUID> global = globalOwners.get(data.owner);
+            if (data.governings.contains(player.getUniqueId())) return true;
+            Set<UUID> global = globalGovernings.get(data.owner);
             return global != null && global.contains(player.getUniqueId());
         }
         return false;
     }
 
     private void openMainMenu(Player player, BlockData data) {
-        Inventory inv = Bukkit.createInventory(null, 54, color(guiMainTitle));
-        inv.setItem(4, createItem(Material.ENDER_PEARL,
+        int size = guiMainSize;
+        if (size % 9 != 0 || size < 9 || size > 54) size = 54;
+        Inventory inv = Bukkit.createInventory(null, size, color(guiMainTitle));
+        if (guiFeatureId) inv.setItem(guiMainSlotId, createItem(Material.ENDER_PEARL,
             data.id > 0 ? guiMainIdItem.replace("%id%", String.valueOf(data.id)) : guiMainIdItemEmpty,
             guiMainIdItemLore));
-        inv.setItem(19, createItem(Material.LEVER, guiMainClickItem.replace("%value%", data.clickType.name()), guiMainClickItemLore));
-        inv.setItem(20, createItem(Material.SHIELD, guiMainSneakItem.replace("%value%", data.requireSneak ? "Yes" : "No"), guiMainSneakItemLore));
-        inv.setItem(21, createItem(Material.NAME_TAG, guiMainRequiredItem.replace("%value%", data.requireItem ? "Yes" : "No"), data.requiredItemName.isEmpty() ? guiMainRequiredItemLoreEmpty : guiMainRequiredItemLore.replace("%name%", data.requiredItemName), guiMainRequiredItemLoreClick));
-        inv.setItem(22, createItem(Material.ENDER_EYE, guiMainLocationItem.replace("%value%", data.teleportLocation.name()), guiMainLocationItemLore, guiMainLocationItemLoreClick));
-        inv.setItem(23, createItem(Material.BOOK, data.customName.isEmpty() ? guiMainNameItemEmpty : guiMainNameItem.replace("%value%", data.customName), guiMainNameItemLore));
-        inv.setItem(24, createItem(Material.ARMOR_STAND, guiMainHologramItem.replace("%value%", data.hologramEnabled ? "Yes" : "No"), guiMainHologramItemLore));
-        inv.setItem(25, createItem(Material.GLOWSTONE_DUST, guiMainHologramColorItem.replace("%value%", data.hologramColor), guiMainHologramColorItemLore));
-        inv.setItem(29, createItem(Material.PLAYER_HEAD, guiMainTeleportAccessItem.replace("%value%", data.teleportAccess.name()), guiMainTeleportAccessItemLore, guiMainTeleportAccessItemLore2));
-        inv.setItem(30, createItem(Material.COMMAND_BLOCK, guiMainManageAccessItem.replace("%value%", data.manageAccess.name()), guiMainManageAccessItemLore, guiMainManageAccessItemLore2));
-        inv.setItem(31, createItem(Material.DIAMOND_PICKAXE, guiMainBreakAccessItem.replace("%value%", data.breakAccess.name()), guiMainBreakAccessItemLore, guiMainBreakAccessItemLore2));
-        inv.setItem(32, createItem(Material.CHEST, guiMainMembersItem, guiMainMembersItemLore));
-        inv.setItem(49, createItem(Material.BARRIER, guiMainCloseItem));
+        if (guiFeatureClick) inv.setItem(guiMainSlotClick, createItem(Material.LEVER, guiMainClickItem.replace("%value%", data.clickType.name()), guiMainClickItemLore));
+        if (guiFeatureSneak) inv.setItem(guiMainSlotSneak, createItem(Material.SHIELD, guiMainSneakItem.replace("%value%", data.requireSneak ? "Yes" : "No"), guiMainSneakItemLore));
+        if (guiFeatureRequiredItem) inv.setItem(guiMainSlotRequiredItem, createItem(Material.NAME_TAG, guiMainRequiredItem.replace("%value%", data.requireItem ? "Yes" : "No"), data.requiredItemName.isEmpty() ? guiMainRequiredItemLoreEmpty : guiMainRequiredItemLore.replace("%name%", data.requiredItemName), guiMainRequiredItemLoreClick));
+        if (guiFeatureLocation) inv.setItem(guiMainSlotLocation, createItem(Material.ENDER_EYE, guiMainLocationItem.replace("%value%", data.teleportLocation.name()), guiMainLocationItemLore, guiMainLocationItemLoreClick));
+        if (guiFeatureName) inv.setItem(guiMainSlotName, createItem(Material.BOOK, data.customName.isEmpty() ? guiMainNameItemEmpty : guiMainNameItem.replace("%value%", data.customName), guiMainNameItemLore));
+        if (guiFeatureHologram) inv.setItem(guiMainSlotHologram, createItem(Material.ARMOR_STAND, guiMainHologramItem.replace("%value%", data.hologramEnabled ? "Yes" : "No"), guiMainHologramItemLore));
+        if (guiFeatureTeleportAccess) inv.setItem(guiMainSlotTeleportAccess, createItem(Material.PLAYER_HEAD, guiMainTeleportAccessItem.replace("%value%", data.teleportAccess.name()), guiMainTeleportAccessItemLore, guiMainTeleportAccessItemLore2));
+        if (guiFeatureManageAccess) inv.setItem(guiMainSlotManageAccess, createItem(Material.COMMAND_BLOCK, guiMainManageAccessItem.replace("%value%", data.manageAccess.name()), guiMainManageAccessItemLore, guiMainManageAccessItemLore2));
+        if (guiFeatureBreakAccess) inv.setItem(guiMainSlotBreakAccess, createItem(Material.DIAMOND_PICKAXE, guiMainBreakAccessItem.replace("%value%", data.breakAccess.name()), guiMainBreakAccessItemLore, guiMainBreakAccessItemLore2));
+        if (guiFeatureMembers) inv.setItem(guiMainSlotMembers, createItem(Material.CHEST, guiMainMembersItem, guiMainMembersItemLore));
+        inv.setItem(guiMainSlotClose, createItem(Material.BARRIER, guiMainCloseItem));
         player.openInventory(inv);
         openGuis.put(player.getUniqueId(), inv);
         guiContexts.put(player.getUniqueId(), new GuiContext(data.key(), "MAIN"));
     }
 
     private void openMembersMenu(Player player, BlockData data) {
-        Inventory inv = Bukkit.createInventory(null, 54, color(guiMembersTitle));
-        inv.setItem(20, createItem(Material.PLAYER_HEAD, guiMembersLocalMembers.replace("%count%", String.valueOf(data.members.size())), guiMembersClickManage));
-        inv.setItem(21, createItem(Material.PLAYER_HEAD, guiMembersLocalOwners.replace("%count%", String.valueOf(data.owners.size())), guiMembersClickManage));
-        inv.setItem(23, createItem(Material.PLAYER_HEAD, guiMembersGlobalMembers.replace("%count%", String.valueOf(getGlobalMembers(data.owner).size())), guiMembersClickManage));
-        inv.setItem(24, createItem(Material.PLAYER_HEAD, guiMembersGlobalOwners.replace("%count%", String.valueOf(getGlobalOwners(data.owner).size())), guiMembersClickManage));
-        inv.setItem(49, createItem(Material.ARROW, guiMembersBack));
+        int size = guiMembersSize;
+        if (size % 9 != 0 || size < 9 || size > 54) size = 54;
+        Inventory inv = Bukkit.createInventory(null, size, color(guiMembersTitle));
+        if (guiFeatureMembersLocal) {
+            inv.setItem(guiMembersSlotLocalMembers, createItem(Material.PLAYER_HEAD, guiMembersLocalMembers.replace("%count%", String.valueOf(data.members.size())), guiMembersClickManage));
+            inv.setItem(guiMembersSlotLocalGovernings, createItem(Material.PLAYER_HEAD, guiMembersLocalGovernings.replace("%count%", String.valueOf(data.governings.size())), guiMembersClickManage));
+        }
+        if (guiFeatureMembersGlobal) {
+            inv.setItem(guiMembersSlotGlobalMembers, createItem(Material.PLAYER_HEAD, guiMembersGlobalMembers.replace("%count%", String.valueOf(getGlobalMembers(data.owner).size())), guiMembersClickManage));
+            inv.setItem(guiMembersSlotGlobalGovernings, createItem(Material.PLAYER_HEAD, guiMembersGlobalGovernings.replace("%count%", String.valueOf(getGlobalGovernings(data.owner).size())), guiMembersClickManage));
+        }
+        inv.setItem(guiMembersSlotBack, createItem(Material.ARROW, guiMembersBack));
         player.openInventory(inv);
         openGuis.put(player.getUniqueId(), inv);
         guiContexts.put(player.getUniqueId(), new GuiContext(data.key(), "MEMBERS"));
@@ -1255,18 +1326,20 @@ public final class Main extends JavaPlugin implements Listener {
         String title;
         switch (listType) {
             case "LOCAL_MEMBERS": list = data.members; title = "Local Members"; break;
-            case "LOCAL_OWNERS": list = data.owners; title = "Local Owners"; break;
+            case "LOCAL_GOVERNINGS": list = data.governings; title = "Local Governings"; break;
             case "GLOBAL_MEMBERS": list = getGlobalMembers(data.owner); title = "Global Members"; break;
-            case "GLOBAL_OWNERS": list = getGlobalOwners(data.owner); title = "Global Owners"; break;
+            case "GLOBAL_GOVERNINGS": list = getGlobalGovernings(data.owner); title = "Global Governings"; break;
             default: return;
         }
         List<UUID> sorted = new ArrayList<>(list);
-        int perPage = 45;
+        int size = guiListSize;
+        if (size % 9 != 0 || size < 9 || size > 54) size = 54;
+        int perPage = size - 9;
         int totalPages = Math.max(1, (int) Math.ceil(sorted.size() / (double) perPage));
         if (page < 0) page = 0;
         if (page >= totalPages) page = totalPages - 1;
         String t = guiListTitle.replace("%list%", title + " (" + (page + 1) + "/" + totalPages + ")");
-        Inventory inv = Bukkit.createInventory(null, 54, color(t));
+        Inventory inv = Bukkit.createInventory(null, size, color(t));
         int start = page * perPage;
         int end = Math.min(start + perPage, sorted.size());
         for (int i = start; i < end; i++) {
@@ -1275,10 +1348,11 @@ public final class Main extends JavaPlugin implements Listener {
             if (name == null) name = uuid.toString();
             inv.setItem(i - start, createItem(Material.PLAYER_HEAD, guiListPlayerItem.replace("%name%", name), guiListPlayerItemLore));
         }
-        inv.setItem(45, createItem(Material.ARROW, guiListPrevious));
-        inv.setItem(49, createItem(Material.ARROW, guiListBack));
-        inv.setItem(53, createItem(Material.ARROW, guiListNext));
-        inv.setItem(48, createItem(Material.EMERALD, guiListAddPlayer));
+        int base = size - 9;
+        inv.setItem(base, createItem(Material.ARROW, guiListPrevious));
+        inv.setItem(base + 3, createItem(Material.EMERALD, guiListAddPlayer));
+        inv.setItem(base + 4, createItem(Material.ARROW, guiListBack));
+        inv.setItem(base + 8, createItem(Material.ARROW, guiListNext));
         player.openInventory(inv);
         openGuis.put(player.getUniqueId(), inv);
         GuiContext ctx = new GuiContext(data.key(), "LIST_" + listType);
@@ -1287,7 +1361,7 @@ public final class Main extends JavaPlugin implements Listener {
     }
 
     private Set<UUID> getGlobalMembers(UUID owner) { return globalMembers.computeIfAbsent(owner, k -> ConcurrentHashMap.newKeySet()); }
-    private Set<UUID> getGlobalOwners(UUID owner) { return globalOwners.computeIfAbsent(owner, k -> ConcurrentHashMap.newKeySet()); }
+    private Set<UUID> getGlobalGovernings(UUID owner) { return globalGovernings.computeIfAbsent(owner, k -> ConcurrentHashMap.newKeySet()); }
 
     private ItemStack createItem(Material mat, String name, String... lore) {
         ItemStack item = new ItemStack(mat);
@@ -1317,68 +1391,67 @@ public final class Main extends JavaPlugin implements Listener {
         int slot = event.getRawSlot();
         String guiType = ctx.guiType;
         if (guiType.equals("MAIN")) {
-            switch (slot) {
-                case 4: player.closeInventory(); player.sendMessage(color(msgIdPrompt)); chatSessions.put(player.getUniqueId(), new ChatInputSession("SET_ID", data.key())); return;
-                case 19: data.clickType = data.clickType == ClickType.LEFT ? ClickType.RIGHT : ClickType.LEFT; saveBlocks(); openMainMenu(player, data); return;
-                case 20: data.requireSneak = !data.requireSneak; saveBlocks(); openMainMenu(player, data); return;
-                case 21: player.closeInventory(); player.sendMessage(color(msgItemPrompt)); chatSessions.put(player.getUniqueId(), new ChatInputSession("SET_ITEM", data.key())); return;
-                case 22:
-                    data.teleportLocation = data.teleportLocation == TeleportLocation.TOP ? TeleportLocation.CURRENT : TeleportLocation.TOP;
-                    if (data.teleportLocation == TeleportLocation.CURRENT) {
-                        Location loc = player.getLocation();
-                        Block block = player.getWorld().getBlockAt(data.x, data.y, data.z);
-                        if (loc.distance(block.getLocation()) <= 5.0) {
-                            data.customDestinationWorld = loc.getWorld().getName();
-                            data.customDestinationX = loc.getX(); data.customDestinationY = loc.getY(); data.customDestinationZ = loc.getZ();
-                            data.customDestinationYaw = loc.getYaw(); data.customDestinationPitch = loc.getPitch();
-                        } else data.customDestinationWorld = "";
-                    }
-                    saveBlocks(); openMainMenu(player, data); return;
-                case 23: player.closeInventory(); player.sendMessage(color(msgNamePrompt)); chatSessions.put(player.getUniqueId(), new ChatInputSession("SET_NAME", data.key())); return;
-                case 24: data.hologramEnabled = !data.hologramEnabled; if (data.hologramEnabled) updateHologram(data); else removeHologram(data); saveBlocks(); openMainMenu(player, data); return;
-                case 25: player.closeInventory(); player.sendMessage(color(msgColorPrompt)); chatSessions.put(player.getUniqueId(), new ChatInputSession("SET_COLOR", data.key())); return;
-                case 29: data.teleportAccess = cycleTeleportAccess(data.teleportAccess); saveBlocks(); openMainMenu(player, data); return;
-                case 30: data.manageAccess = cycleManageAccess(data.manageAccess); saveBlocks(); openMainMenu(player, data); return;
-                case 31: data.breakAccess = cycleBreakAccess(data.breakAccess); saveBlocks(); openMainMenu(player, data); return;
-                case 32: openMembersMenu(player, data); return;
-                case 49: player.closeInventory(); return;
-                default: return;
+            if (guiFeatureId && slot == guiMainSlotId) { player.closeInventory(); player.sendMessage(color(msgIdPrompt)); chatSessions.put(player.getUniqueId(), new ChatInputSession("SET_ID", data.key())); return; }
+            if (guiFeatureClick && slot == guiMainSlotClick) { data.clickType = data.clickType == ClickType.LEFT ? ClickType.RIGHT : ClickType.LEFT; saveBlocks(); openMainMenu(player, data); return; }
+            if (guiFeatureSneak && slot == guiMainSlotSneak) { data.requireSneak = !data.requireSneak; saveBlocks(); openMainMenu(player, data); return; }
+            if (guiFeatureRequiredItem && slot == guiMainSlotRequiredItem) { player.closeInventory(); player.sendMessage(color(msgItemPrompt)); chatSessions.put(player.getUniqueId(), new ChatInputSession("SET_ITEM", data.key())); return; }
+            if (guiFeatureLocation && slot == guiMainSlotLocation) {
+                data.teleportLocation = data.teleportLocation == TeleportLocation.TOP ? TeleportLocation.CURRENT : TeleportLocation.TOP;
+                if (data.teleportLocation == TeleportLocation.CURRENT) {
+                    Location loc = player.getLocation();
+                    Block block = player.getWorld().getBlockAt(data.x, data.y, data.z);
+                    if (loc.distance(block.getLocation()) <= 5.0) {
+                        data.customDestinationWorld = loc.getWorld().getName();
+                        data.customDestinationX = loc.getX(); data.customDestinationY = loc.getY(); data.customDestinationZ = loc.getZ();
+                        data.customDestinationYaw = loc.getYaw(); data.customDestinationPitch = loc.getPitch();
+                    } else data.customDestinationWorld = "";
+                }
+                saveBlocks(); openMainMenu(player, data); return;
             }
+            if (guiFeatureName && slot == guiMainSlotName) { player.closeInventory(); player.sendMessage(color(msgNamePrompt)); chatSessions.put(player.getUniqueId(), new ChatInputSession("SET_NAME", data.key())); return; }
+            if (guiFeatureHologram && slot == guiMainSlotHologram) { data.hologramEnabled = !data.hologramEnabled; if (data.hologramEnabled) updateHologram(data); else removeHologram(data); saveBlocks(); openMainMenu(player, data); return; }
+            if (guiFeatureTeleportAccess && slot == guiMainSlotTeleportAccess) { data.teleportAccess = cycleTeleportAccess(data.teleportAccess); saveBlocks(); openMainMenu(player, data); return; }
+            if (guiFeatureManageAccess && slot == guiMainSlotManageAccess) { data.manageAccess = cycleManageAccess(data.manageAccess); saveBlocks(); openMainMenu(player, data); return; }
+            if (guiFeatureBreakAccess && slot == guiMainSlotBreakAccess) { data.breakAccess = cycleBreakAccess(data.breakAccess); saveBlocks(); openMainMenu(player, data); return; }
+            if (guiFeatureMembers && slot == guiMainSlotMembers) { openMembersMenu(player, data); return; }
+            if (slot == guiMainSlotClose) { player.closeInventory(); return; }
+            return;
         }
         if (guiType.equals("MEMBERS")) {
-            switch (slot) {
-                case 20: openPlayerListView(player, data, "LOCAL_MEMBERS", 0); return;
-                case 21: openPlayerListView(player, data, "LOCAL_OWNERS", 0); return;
-                case 23: openPlayerListView(player, data, "GLOBAL_MEMBERS", 0); return;
-                case 24: openPlayerListView(player, data, "GLOBAL_OWNERS", 0); return;
-                case 49: openMainMenu(player, data); return;
-                default: return;
-            }
+            if (guiFeatureMembersLocal && slot == guiMembersSlotLocalMembers) { openPlayerListView(player, data, "LOCAL_MEMBERS", 0); return; }
+            if (guiFeatureMembersLocal && slot == guiMembersSlotLocalGovernings) { openPlayerListView(player, data, "LOCAL_GOVERNINGS", 0); return; }
+            if (guiFeatureMembersGlobal && slot == guiMembersSlotGlobalMembers) { openPlayerListView(player, data, "GLOBAL_MEMBERS", 0); return; }
+            if (guiFeatureMembersGlobal && slot == guiMembersSlotGlobalGovernings) { openPlayerListView(player, data, "GLOBAL_GOVERNINGS", 0); return; }
+            if (slot == guiMembersSlotBack) { openMainMenu(player, data); return; }
+            return;
         }
         if (guiType.startsWith("LIST_")) {
             String listType = guiType.substring(5);
             Set<UUID> list;
             switch (listType) {
                 case "LOCAL_MEMBERS": list = data.members; break;
-                case "LOCAL_OWNERS": list = data.owners; break;
+                case "LOCAL_GOVERNINGS": list = data.governings; break;
                 case "GLOBAL_MEMBERS": list = getGlobalMembers(data.owner); break;
-                case "GLOBAL_OWNERS": list = getGlobalOwners(data.owner); break;
+                case "GLOBAL_GOVERNINGS": list = getGlobalGovernings(data.owner); break;
                 default: return;
             }
             List<UUID> sorted = new ArrayList<>(list);
-            if (slot == 45) { openPlayerListView(player, data, listType, ctx.page - 1); return; }
-            if (slot == 53) { openPlayerListView(player, data, listType, ctx.page + 1); return; }
-            if (slot == 49) { openMembersMenu(player, data); return; }
-            if (slot == 48) { player.closeInventory(); player.sendMessage(color(msgListPrompt)); chatSessions.put(player.getUniqueId(), new ChatInputSession("ADD_" + listType, data.key())); return; }
-            int perPage = 45;
+            int size = guiListSize;
+            if (size % 9 != 0 || size < 9 || size > 54) size = 54;
+            int perPage = size - 9;
+            int base = size - 9;
+            if (slot == base) { openPlayerListView(player, data, listType, ctx.page - 1); return; }
+            if (slot == base + 8) { openPlayerListView(player, data, listType, ctx.page + 1); return; }
+            if (slot == base + 4) { openMembersMenu(player, data); return; }
+            if (slot == base + 3) { player.closeInventory(); player.sendMessage(color(msgListPrompt)); chatSessions.put(player.getUniqueId(), new ChatInputSession("ADD_" + listType, data.key())); return; }
             int index = ctx.page * perPage + slot;
             if (slot >= 0 && slot < perPage && index < sorted.size()) { list.remove(sorted.get(index)); saveBlocks(); openPlayerListView(player, data, listType, ctx.page); }
         }
     }
 
-    private AccessLevel cycleTeleportAccess(AccessLevel c) { AccessLevel[] v = {AccessLevel.OWNER, AccessLevel.MEMBERS, AccessLevel.OWNERS, AccessLevel.ALL}; return v[(Arrays.asList(v).indexOf(c) + 1) % v.length]; }
-    private AccessLevel cycleManageAccess(AccessLevel c) { AccessLevel[] v = {AccessLevel.OWNER, AccessLevel.OWNERS, AccessLevel.ALL}; return v[(Arrays.asList(v).indexOf(c) + 1) % v.length]; }
-    private AccessLevel cycleBreakAccess(AccessLevel c) { AccessLevel[] v = {AccessLevel.OWNER, AccessLevel.MEMBERS, AccessLevel.OWNERS, AccessLevel.ALL}; return v[(Arrays.asList(v).indexOf(c) + 1) % v.length]; }
+    private AccessLevel cycleTeleportAccess(AccessLevel c) { AccessLevel[] v = {AccessLevel.OWNER, AccessLevel.MEMBERS, AccessLevel.GOVERNINGS, AccessLevel.ALL}; return v[(Arrays.asList(v).indexOf(c) + 1) % v.length]; }
+    private AccessLevel cycleManageAccess(AccessLevel c) { AccessLevel[] v = {AccessLevel.OWNER, AccessLevel.GOVERNINGS, AccessLevel.ALL}; return v[(Arrays.asList(v).indexOf(c) + 1) % v.length]; }
+    private AccessLevel cycleBreakAccess(AccessLevel c) { AccessLevel[] v = {AccessLevel.OWNER, AccessLevel.MEMBERS, AccessLevel.GOVERNINGS, AccessLevel.ALL}; return v[(Arrays.asList(v).indexOf(c) + 1) % v.length]; }
 
     @EventHandler
     public void onInventoryClose(InventoryCloseEvent event) {
@@ -1438,13 +1511,7 @@ public final class Main extends JavaPlugin implements Listener {
                 String name = message.length() > blockNamingMaxLength ? message.substring(0, blockNamingMaxLength) : message;
                 data.customName = name; saveBlocks();
                 if (data.hologramEnabled) updateHologram(data);
-                player.sendMessage(color(msgNameSet.replace("%name%", name))); openMainMenu(player, data); return;
-            }
-            case "SET_COLOR": {
-                if (!message.matches("&#[A-Fa-f0-9]{6}")) { player.sendMessage(color(msgColorInvalid)); return; }
-                data.hologramColor = message; saveBlocks();
-                if (data.hologramEnabled) updateHologram(data);
-                player.sendMessage(color(msgColorSet.replace("%color%", message))); openMainMenu(player, data); return;
+                player.sendMessage(color(msgNameSet.replace("%name%", color(name)))); openMainMenu(player, data); return;
             }
             default: {
                 if (session.type.startsWith("ADD_")) {
@@ -1454,9 +1521,9 @@ public final class Main extends JavaPlugin implements Listener {
                     Set<UUID> list;
                     switch (listType) {
                         case "LOCAL_MEMBERS": list = data.members; break;
-                        case "LOCAL_OWNERS": list = data.owners; break;
+                        case "LOCAL_GOVERNINGS": list = data.governings; break;
                         case "GLOBAL_MEMBERS": list = getGlobalMembers(data.owner); break;
-                        case "GLOBAL_OWNERS": list = getGlobalOwners(data.owner); break;
+                        case "GLOBAL_GOVERNINGS": list = getGlobalGovernings(data.owner); break;
                         default: return;
                     }
                     list.add(target.getUniqueId()); saveBlocks();
@@ -1477,6 +1544,7 @@ public final class Main extends JavaPlugin implements Listener {
 
     private void updateHologram(BlockData data) {
         if (!data.hologramEnabled) { removeHologram(data); return; }
+        if (data.customName == null || data.customName.isEmpty()) { removeHologram(data); return; }
         World w = Bukkit.getWorld(data.world);
         if (w == null) return;
         Location loc = new Location(w, data.x + 0.5, data.y + 1.2 + hologramsLineHeight, data.z + 0.5);
@@ -1494,11 +1562,8 @@ public final class Main extends JavaPlugin implements Listener {
             });
             hologramEntities.put(data.key(), stand.getUniqueId());
         } else stand.teleport(loc);
-        String text = data.customName.isEmpty() ? hologramsFormatNoName : hologramsFormat;
-        text = text.replace("%name%", data.customName).replace("%id%", String.valueOf(data.id));
-        if (!hologramsShowId) text = text.replace("ID: " + data.id, "").trim();
-        if (!hologramsShowName && data.customName.isEmpty()) text = text.replace("%name%", "").trim();
-        stand.setCustomName(color(data.hologramColor + ChatColor.stripColor(color(text))));
+        String text = data.customName;
+        stand.setCustomName(color(text));
     }
 
     private void removeHologram(BlockData data) {
@@ -1554,10 +1619,10 @@ public final class Main extends JavaPlugin implements Listener {
             if (checkPermission && !player.hasPermission(viewPermMember)) return false;
             if (data.owner.equals(uuid)) return true;
             if (data.members.contains(uuid)) return true;
-            if (data.owners.contains(uuid)) return true;
+            if (data.governings.contains(uuid)) return true;
             Set<UUID> gm = globalMembers.get(data.owner);
             if (gm != null && gm.contains(uuid)) return true;
-            Set<UUID> go = globalOwners.get(data.owner);
+            Set<UUID> go = globalGovernings.get(data.owner);
             if (go != null && go.contains(uuid)) return true;
             return false;
         }
@@ -1597,14 +1662,16 @@ public final class Main extends JavaPlugin implements Listener {
         if (!(sender instanceof Player)) { sender.sendMessage(color(msgPlayersOnly)); return true; }
         Player player = (Player) sender;
         if (sub.equals("info")) {
-            Block block = player.getTargetBlockExact(10);
+            Block block;
+            try { block = player.getTargetBlockExact(10); }
+            catch (NoSuchMethodError e) { block = player.getTargetBlock((Set<Material>) null, 10); }
             if (block == null) { player.sendMessage(color(msgNoBlockInSight)); return true; }
             String key = block.getWorld().getName() + ":" + block.getX() + ":" + block.getY() + ":" + block.getZ();
             BlockData data = blockDataMap.get(key);
             if (data == null) { player.sendMessage(color(msgNotTeleporter)); return true; }
             player.sendMessage(color(msgHeaderInfo));
             player.sendMessage(color("&#FF5300ID: &f" + data.id));
-            player.sendMessage(color("&#FF5300Name: &f" + (data.customName.isEmpty() ? "-" : data.customName)));
+            player.sendMessage(color("&#FF5300Name: &f" + (data.customName.isEmpty() ? "-" : color(data.customName))));
             player.sendMessage(color("&#FF5300Owner: &f" + Bukkit.getOfflinePlayer(data.owner).getName()));
             player.sendMessage(color("&#FF5300Click: &f" + data.clickType.name()));
             player.sendMessage(color("&#FF5300Require sneak: &f" + data.requireSneak));
@@ -1613,7 +1680,7 @@ public final class Main extends JavaPlugin implements Listener {
             player.sendMessage(color("&#FF5300Teleport access: &f" + data.teleportAccess.name()));
             player.sendMessage(color("&#FF5300Manage access: &f" + data.manageAccess.name()));
             player.sendMessage(color("&#FF5300Break access: &f" + data.breakAccess.name()));
-            player.sendMessage(color("&#FF5300Hologram: &f" + (data.hologramEnabled ? "Yes" : "No") + " (" + data.hologramColor + ")"));
+            player.sendMessage(color("&#FF5300Hologram: &f" + (data.hologramEnabled ? "Yes" : "No")));
             return true;
         }
         if (sub.equals("list")) {
@@ -1623,7 +1690,7 @@ public final class Main extends JavaPlugin implements Listener {
             for (String k : keys) {
                 BlockData data = blockDataMap.get(k);
                 if (data == null) continue;
-                player.sendMessage(color("&#FF5300ID " + data.id + " &7-> &f" + k + (data.customName.isEmpty() ? "" : " &7(" + data.customName + ")")));
+                player.sendMessage(color("&#FF5300ID " + data.id + " &7-> &f" + k + (data.customName.isEmpty() ? "" : " &7(" + color(data.customName) + "&7)")));
             }
             return true;
         }
