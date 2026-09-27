@@ -22,18 +22,18 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.entity.ProjectileLaunchEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.event.entity.ProjectileLaunchEvent;
-import org.bukkit.projectiles.ProjectileSource;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerToggleSneakEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
 import java.io.File;
@@ -85,7 +85,6 @@ public final class Main extends JavaPlugin implements Listener {
     private int cooldownTime;
     private String cooldownLocale;
     private MessageType cooldownMessageType;
-    private MessageType elevatorMessageType;
     private int elevatorTitleFadeIn;
     private int elevatorTitleStay;
     private int elevatorTitleFadeOut;
@@ -95,7 +94,6 @@ public final class Main extends JavaPlugin implements Listener {
     private MessageType elevatorDownType;
     private String elevatorDangerMessage;
     private MessageType elevatorDangerType;
-    private MessageType teleporterMessageType;
     private int teleporterTitleFadeIn;
     private int teleporterTitleStay;
     private int teleporterTitleFadeOut;
@@ -388,7 +386,6 @@ public final class Main extends JavaPlugin implements Listener {
     }
 
     private String prefixed(String message) { return color(PREFIX + message); }
-
     private void debug(String message) { if (debug) getLogger().info("[DEBUG] " + message); }
 
     private void loadConfig() {
@@ -656,7 +653,11 @@ public final class Main extends JavaPlugin implements Listener {
     }
 
     private void loadBlocks() {
-        blockDataMap.clear(); idIndex.clear(); playerBlocks.clear(); globalMembers.clear(); globalOwners.clear();
+        blockDataMap.clear();
+        idIndex.clear();
+        playerBlocks.clear();
+        globalMembers.clear();
+        globalOwners.clear();
         blocksFile = new File(getDataFolder(), "blocks.yml");
         if (!blocksFile.exists()) {
             try { getDataFolder().mkdirs(); blocksFile.createNewFile(); }
@@ -950,29 +951,31 @@ public final class Main extends JavaPlugin implements Listener {
         Player player = event.getPlayer();
         if (event.getClickedBlock() == null) return;
         if (event.getAction() != Action.RIGHT_CLICK_BLOCK) return;
+        if (!player.isSneaking()) return;
         ItemStack hand = player.getInventory().getItemInMainHand();
         if (hand == null || hand.getType() != Material.ENDER_PEARL) return;
         Block block = event.getClickedBlock();
         Material blockType = block.getType();
         String key = block.getWorld().getName() + ":" + block.getX() + ":" + block.getY() + ":" + block.getZ();
         BlockData data = blockDataMap.get(key);
-        boolean shouldCancel = false;
-        if (data != null) shouldCancel = true;
+        boolean allowed = false;
+        if (data != null) allowed = true;
         else {
-            if (teleporterAllowAllBlocks) shouldCancel = true;
-            else {
-                if (teleporterBlockTypes.contains(blockType)) shouldCancel = true;
-                else if (teleporterBlockTypesPermission != null && !teleporterBlockTypesPermission.isEmpty() && player.hasPermission(teleporterBlockTypesPermission)) shouldCancel = true;
-            }
+            if (teleporterAllowAllBlocks) allowed = true;
+            else if (teleporterBlockTypes.contains(blockType)) allowed = true;
+            else if (teleporterBlockTypesPermission != null && !teleporterBlockTypesPermission.isEmpty() && player.hasPermission(teleporterBlockTypesPermission)) allowed = true;
         }
-        if (shouldCancel) {
+        if (allowed) {
             event.setCancelled(true);
-            event.setUseItemInHand(org.bukkit.event.Event.Result.DENY);
-            event.setUseInteractedBlock(org.bukkit.event.Event.Result.DENY);
+            try { event.setUseInteractedBlock(org.bukkit.event.Event.Result.DENY); } catch (Throwable ignored) {}
+            player.setMetadata("elevator_cancel_pearl", new FixedMetadataValue(this, System.currentTimeMillis() + 300L));
             pendingPearlCancel.add(player.getUniqueId());
             new BukkitRunnable() {
-                @Override public void run() { pendingPearlCancel.remove(player.getUniqueId()); }
-            }.runTaskLater(this, 2L);
+                @Override public void run() {
+                    pendingPearlCancel.remove(player.getUniqueId());
+                    if (player.hasMetadata("elevator_cancel_pearl")) player.removeMetadata("elevator_cancel_pearl", Main.this);
+                }
+            }.runTaskLater(this, 5L);
         }
     }
 
@@ -991,7 +994,7 @@ public final class Main extends JavaPlugin implements Listener {
         ItemStack handItem = player.getInventory().getItemInMainHand();
         boolean holdingEnderPearl = handItem != null && handItem.getType() == Material.ENDER_PEARL;
         if (data == null) {
-            if (isRight && holdingEnderPearl) { event.setCancelled(true); tryBindBlock(player, block, blockType); }
+            if (isRight && player.isSneaking() && holdingEnderPearl) { event.setCancelled(true); tryBindBlock(player, block, blockType); }
             return;
         }
         if (isRight && player.isSneaking()) {
@@ -1027,14 +1030,12 @@ public final class Main extends JavaPlugin implements Listener {
     @EventHandler(priority = EventPriority.LOWEST)
     public void onProjectileLaunch(ProjectileLaunchEvent event) {
         if (!(event.getEntity() instanceof EnderPearl)) return;
-        EnderPearl pearl = (EnderPearl) event.getEntity();
-        ProjectileSource source = pearl.getShooter();
-        if (!(source instanceof Player)) return;
-        Player player = (Player) source;
+        if (!(event.getEntity().getShooter() instanceof Player)) return;
+        Player player = (Player) event.getEntity().getShooter();
         if (pendingPearlCancel.contains(player.getUniqueId())) {
             event.setCancelled(true);
-            pearl.remove();
             pendingPearlCancel.remove(player.getUniqueId());
+            try { if (player.hasMetadata("elevator_cancel_pearl")) player.removeMetadata("elevator_cancel_pearl", Main.this); } catch (Throwable ignored) {}
         }
     }
 
@@ -1050,6 +1051,7 @@ public final class Main extends JavaPlugin implements Listener {
     }
 
     private void tryBindBlock(Player player, Block block, Material blockType) {
+        if (!player.isSneaking()) return;
         if (isInDisabledWorld(player)) { debug("Disabled world"); return; }
         if (!teleporterAllowAllBlocks) {
             if (!teleporterBlockTypes.contains(blockType)) {
@@ -1215,20 +1217,22 @@ public final class Main extends JavaPlugin implements Listener {
     }
 
     private void openMainMenu(Player player, BlockData data) {
-        Inventory inv = Bukkit.createInventory(null, 27, color(guiMainTitle));
-        inv.setItem(4, createItem(Material.ENDER_PEARL, data.id > 0 ? guiMainIdItem.replace("%id%", String.valueOf(data.id)) : guiMainIdItemEmpty, guiMainIdItemLore));
-        inv.setItem(10, createItem(Material.LEVER, guiMainClickItem.replace("%value%", data.clickType.name()), guiMainClickItemLore));
-        inv.setItem(11, createItem(Material.SHIELD, guiMainSneakItem.replace("%value%", data.requireSneak ? "Yes" : "No"), guiMainSneakItemLore));
-        inv.setItem(12, createItem(Material.NAME_TAG, guiMainRequiredItem.replace("%value%", data.requireItem ? "Yes" : "No"), data.requiredItemName.isEmpty() ? guiMainRequiredItemLoreEmpty : guiMainRequiredItemLore.replace("%name%", data.requiredItemName), guiMainRequiredItemLoreClick));
-        inv.setItem(13, createItem(Material.ENDER_EYE, guiMainLocationItem.replace("%value%", data.teleportLocation.name()), guiMainLocationItemLore, guiMainLocationItemLoreClick));
-        inv.setItem(14, createItem(Material.PLAYER_HEAD, guiMainTeleportAccessItem.replace("%value%", data.teleportAccess.name()), guiMainTeleportAccessItemLore, guiMainTeleportAccessItemLore2));
-        inv.setItem(15, createItem(Material.COMMAND_BLOCK, guiMainManageAccessItem.replace("%value%", data.manageAccess.name()), guiMainManageAccessItemLore, guiMainManageAccessItemLore2));
-        inv.setItem(16, createItem(Material.DIAMOND_PICKAXE, guiMainBreakAccessItem.replace("%value%", data.breakAccess.name()), guiMainBreakAccessItemLore, guiMainBreakAccessItemLore2));
-        inv.setItem(19, createItem(Material.BOOK, data.customName.isEmpty() ? guiMainNameItemEmpty : guiMainNameItem.replace("%value%", data.customName), guiMainNameItemLore));
-        inv.setItem(20, createItem(Material.ARMOR_STAND, guiMainHologramItem.replace("%value%", data.hologramEnabled ? "Yes" : "No"), guiMainHologramItemLore));
-        inv.setItem(21, createItem(Material.GLOWSTONE_DUST, guiMainHologramColorItem.replace("%value%", data.hologramColor), guiMainHologramColorItemLore));
-        inv.setItem(22, createItem(Material.CHEST, guiMainMembersItem, guiMainMembersItemLore));
-        inv.setItem(26, createItem(Material.BARRIER, guiMainCloseItem));
+        Inventory inv = Bukkit.createInventory(null, 54, color(guiMainTitle));
+        inv.setItem(4, createItem(Material.ENDER_PEARL,
+            data.id > 0 ? guiMainIdItem.replace("%id%", String.valueOf(data.id)) : guiMainIdItemEmpty,
+            guiMainIdItemLore));
+        inv.setItem(19, createItem(Material.LEVER, guiMainClickItem.replace("%value%", data.clickType.name()), guiMainClickItemLore));
+        inv.setItem(20, createItem(Material.SHIELD, guiMainSneakItem.replace("%value%", data.requireSneak ? "Yes" : "No"), guiMainSneakItemLore));
+        inv.setItem(21, createItem(Material.NAME_TAG, guiMainRequiredItem.replace("%value%", data.requireItem ? "Yes" : "No"), data.requiredItemName.isEmpty() ? guiMainRequiredItemLoreEmpty : guiMainRequiredItemLore.replace("%name%", data.requiredItemName), guiMainRequiredItemLoreClick));
+        inv.setItem(22, createItem(Material.ENDER_EYE, guiMainLocationItem.replace("%value%", data.teleportLocation.name()), guiMainLocationItemLore, guiMainLocationItemLoreClick));
+        inv.setItem(23, createItem(Material.BOOK, data.customName.isEmpty() ? guiMainNameItemEmpty : guiMainNameItem.replace("%value%", data.customName), guiMainNameItemLore));
+        inv.setItem(24, createItem(Material.ARMOR_STAND, guiMainHologramItem.replace("%value%", data.hologramEnabled ? "Yes" : "No"), guiMainHologramItemLore));
+        inv.setItem(25, createItem(Material.GLOWSTONE_DUST, guiMainHologramColorItem.replace("%value%", data.hologramColor), guiMainHologramColorItemLore));
+        inv.setItem(29, createItem(Material.PLAYER_HEAD, guiMainTeleportAccessItem.replace("%value%", data.teleportAccess.name()), guiMainTeleportAccessItemLore, guiMainTeleportAccessItemLore2));
+        inv.setItem(30, createItem(Material.COMMAND_BLOCK, guiMainManageAccessItem.replace("%value%", data.manageAccess.name()), guiMainManageAccessItemLore, guiMainManageAccessItemLore2));
+        inv.setItem(31, createItem(Material.DIAMOND_PICKAXE, guiMainBreakAccessItem.replace("%value%", data.breakAccess.name()), guiMainBreakAccessItemLore, guiMainBreakAccessItemLore2));
+        inv.setItem(32, createItem(Material.CHEST, guiMainMembersItem, guiMainMembersItemLore));
+        inv.setItem(49, createItem(Material.BARRIER, guiMainCloseItem));
         player.openInventory(inv);
         openGuis.put(player.getUniqueId(), inv);
         guiContexts.put(player.getUniqueId(), new GuiContext(data.key(), "MAIN"));
@@ -1236,10 +1240,10 @@ public final class Main extends JavaPlugin implements Listener {
 
     private void openMembersMenu(Player player, BlockData data) {
         Inventory inv = Bukkit.createInventory(null, 54, color(guiMembersTitle));
-        inv.setItem(10, createItem(Material.PLAYER_HEAD, guiMembersLocalMembers.replace("%count%", String.valueOf(data.members.size())), guiMembersClickManage));
-        inv.setItem(11, createItem(Material.PLAYER_HEAD, guiMembersLocalOwners.replace("%count%", String.valueOf(data.owners.size())), guiMembersClickManage));
-        inv.setItem(12, createItem(Material.PLAYER_HEAD, guiMembersGlobalMembers.replace("%count%", String.valueOf(getGlobalMembers(data.owner).size())), guiMembersClickManage));
-        inv.setItem(13, createItem(Material.PLAYER_HEAD, guiMembersGlobalOwners.replace("%count%", String.valueOf(getGlobalOwners(data.owner).size())), guiMembersClickManage));
+        inv.setItem(20, createItem(Material.PLAYER_HEAD, guiMembersLocalMembers.replace("%count%", String.valueOf(data.members.size())), guiMembersClickManage));
+        inv.setItem(21, createItem(Material.PLAYER_HEAD, guiMembersLocalOwners.replace("%count%", String.valueOf(data.owners.size())), guiMembersClickManage));
+        inv.setItem(23, createItem(Material.PLAYER_HEAD, guiMembersGlobalMembers.replace("%count%", String.valueOf(getGlobalMembers(data.owner).size())), guiMembersClickManage));
+        inv.setItem(24, createItem(Material.PLAYER_HEAD, guiMembersGlobalOwners.replace("%count%", String.valueOf(getGlobalOwners(data.owner).size())), guiMembersClickManage));
         inv.setItem(49, createItem(Material.ARROW, guiMembersBack));
         player.openInventory(inv);
         openGuis.put(player.getUniqueId(), inv);
@@ -1315,10 +1319,10 @@ public final class Main extends JavaPlugin implements Listener {
         if (guiType.equals("MAIN")) {
             switch (slot) {
                 case 4: player.closeInventory(); player.sendMessage(color(msgIdPrompt)); chatSessions.put(player.getUniqueId(), new ChatInputSession("SET_ID", data.key())); return;
-                case 10: data.clickType = data.clickType == ClickType.LEFT ? ClickType.RIGHT : ClickType.LEFT; saveBlocks(); openMainMenu(player, data); return;
-                case 11: data.requireSneak = !data.requireSneak; saveBlocks(); openMainMenu(player, data); return;
-                case 12: player.closeInventory(); player.sendMessage(color(msgItemPrompt)); chatSessions.put(player.getUniqueId(), new ChatInputSession("SET_ITEM", data.key())); return;
-                case 13:
+                case 19: data.clickType = data.clickType == ClickType.LEFT ? ClickType.RIGHT : ClickType.LEFT; saveBlocks(); openMainMenu(player, data); return;
+                case 20: data.requireSneak = !data.requireSneak; saveBlocks(); openMainMenu(player, data); return;
+                case 21: player.closeInventory(); player.sendMessage(color(msgItemPrompt)); chatSessions.put(player.getUniqueId(), new ChatInputSession("SET_ITEM", data.key())); return;
+                case 22:
                     data.teleportLocation = data.teleportLocation == TeleportLocation.TOP ? TeleportLocation.CURRENT : TeleportLocation.TOP;
                     if (data.teleportLocation == TeleportLocation.CURRENT) {
                         Location loc = player.getLocation();
@@ -1330,23 +1334,23 @@ public final class Main extends JavaPlugin implements Listener {
                         } else data.customDestinationWorld = "";
                     }
                     saveBlocks(); openMainMenu(player, data); return;
-                case 14: data.teleportAccess = cycleTeleportAccess(data.teleportAccess); saveBlocks(); openMainMenu(player, data); return;
-                case 15: data.manageAccess = cycleManageAccess(data.manageAccess); saveBlocks(); openMainMenu(player, data); return;
-                case 16: data.breakAccess = cycleBreakAccess(data.breakAccess); saveBlocks(); openMainMenu(player, data); return;
-                case 19: player.closeInventory(); player.sendMessage(color(msgNamePrompt)); chatSessions.put(player.getUniqueId(), new ChatInputSession("SET_NAME", data.key())); return;
-                case 20: data.hologramEnabled = !data.hologramEnabled; if (data.hologramEnabled) updateHologram(data); else removeHologram(data); saveBlocks(); openMainMenu(player, data); return;
-                case 21: player.closeInventory(); player.sendMessage(color(msgColorPrompt)); chatSessions.put(player.getUniqueId(), new ChatInputSession("SET_COLOR", data.key())); return;
-                case 22: openMembersMenu(player, data); return;
-                case 26: player.closeInventory(); return;
+                case 23: player.closeInventory(); player.sendMessage(color(msgNamePrompt)); chatSessions.put(player.getUniqueId(), new ChatInputSession("SET_NAME", data.key())); return;
+                case 24: data.hologramEnabled = !data.hologramEnabled; if (data.hologramEnabled) updateHologram(data); else removeHologram(data); saveBlocks(); openMainMenu(player, data); return;
+                case 25: player.closeInventory(); player.sendMessage(color(msgColorPrompt)); chatSessions.put(player.getUniqueId(), new ChatInputSession("SET_COLOR", data.key())); return;
+                case 29: data.teleportAccess = cycleTeleportAccess(data.teleportAccess); saveBlocks(); openMainMenu(player, data); return;
+                case 30: data.manageAccess = cycleManageAccess(data.manageAccess); saveBlocks(); openMainMenu(player, data); return;
+                case 31: data.breakAccess = cycleBreakAccess(data.breakAccess); saveBlocks(); openMainMenu(player, data); return;
+                case 32: openMembersMenu(player, data); return;
+                case 49: player.closeInventory(); return;
                 default: return;
             }
         }
         if (guiType.equals("MEMBERS")) {
             switch (slot) {
-                case 10: openPlayerListView(player, data, "LOCAL_MEMBERS", 0); return;
-                case 11: openPlayerListView(player, data, "LOCAL_OWNERS", 0); return;
-                case 12: openPlayerListView(player, data, "GLOBAL_MEMBERS", 0); return;
-                case 13: openPlayerListView(player, data, "GLOBAL_OWNERS", 0); return;
+                case 20: openPlayerListView(player, data, "LOCAL_MEMBERS", 0); return;
+                case 21: openPlayerListView(player, data, "LOCAL_OWNERS", 0); return;
+                case 23: openPlayerListView(player, data, "GLOBAL_MEMBERS", 0); return;
+                case 24: openPlayerListView(player, data, "GLOBAL_OWNERS", 0); return;
                 case 49: openMainMenu(player, data); return;
                 default: return;
             }
@@ -1405,8 +1409,7 @@ public final class Main extends JavaPlugin implements Listener {
         switch (session.type) {
             case "SET_ID": {
                 int newId;
-                try { newId = Integer.parseInt(message); }
-                catch (NumberFormatException e) { player.sendMessage(color(msgIdInvalid)); return; }
+                try { newId = Integer.parseInt(message); } catch (NumberFormatException e) { player.sendMessage(color(msgIdInvalid)); return; }
                 if (newId <= 0 || newId > 99999) { player.sendMessage(color(msgIdRange)); return; }
                 Set<String> existing = idIndex.get(newId);
                 if (existing != null) {
