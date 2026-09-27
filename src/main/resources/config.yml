@@ -52,7 +52,70 @@ Teleporter:
     Enabled: true
     MaxDistance: 10000.0
   Bind:
-    ConsumePearl: true
+    Items:
+      ENDER_PEARL:
+        Consume: true
+        ConsumeAmount: 1
+        CheckPermission: false
+        Permission: "elevator.bind.pearl"
+      EYE_OF_ENDER:
+        Consume: true
+        ConsumeAmount: 1
+        CheckPermission: false
+        Permission: "elevator.bind.eye"
+
+Features:
+  Teleport:
+    Enabled: true
+    CheckPermission: false
+    Permission: "elevator.teleport"
+    DefaultAccess: "ALL"
+  Manage:
+    Enabled: true
+    CheckPermission: false
+    Permission: "elevator.manage"
+    DefaultAccess: "OWNER"
+  Break:
+    Enabled: true
+    CheckPermission: false
+    Permission: "elevator.break"
+    DefaultAccess: "ALL"
+  Bind:
+    Enabled: true
+    CheckPermission: false
+    Permission: "elevator.bind"
+  Password:
+    Enabled: true
+    CheckPermission: false
+    Permission: "elevator.password"
+  Redirect:
+    Enabled: true
+    CheckPermission: false
+    Permission: "elevator.redirect"
+  Hologram:
+    Enabled: true
+    CheckPermission: false
+    Permission: "elevator.hologram"
+  Naming:
+    Enabled: true
+    CheckPermission: false
+    Permission: "elevator.naming"
+  DistanceCheck:
+    Enabled: true
+    CheckBypassPermission: false
+    BypassPermission: "elevator.bypass.distance"
+  CrossWorld:
+    Enabled: true
+    CheckBypassPermission: false
+    BypassPermission: "elevator.bypass.crossworld"
+  View:
+    Enabled: true
+    PermissionAll: "elevator.view.all"
+    CheckPermissionAll: false
+    PermissionOwner: "elevator.view.owner"
+    CheckPermissionOwner: false
+    PermissionMember: "elevator.view.member"
+    CheckPermissionMember: false
 
 # ============================================
 # COOLDOWN SETTINGS
@@ -193,9 +256,6 @@ View:
   MaxDistance: 64
   ParticleCount: 3
   ParticleType: END_ROD
-  PermissionAll: "elevator.view.all"
-  PermissionOwner: "elevator.view.owner"
-  PermissionMember: "elevator.view.member"
 
 # ============================================
 # HOLOGRAMS
@@ -220,44 +280,30 @@ BlockNaming:
 # DISABLED WORLDS
 # ============================================
 DisabledWorlds:
-  - "world_nether"
-  - "world_the_end"
+  Elevator:
+    - "world_nether"
+    - "world_the_end"
+  Teleporter:
+    - "world_nether"
+    - "world_the_end"
 
 # ============================================
 # PERMISSIONS
 # ============================================
 Permissions:
-  CheckPermission: false
-  Use: "elevator.use"
-  BypassCooldown: "elevator.bypass"
-  Teleport: "elevator.teleport"
-  Manage: "elevator.manage"
-  BreakBypass: "elevator.break.bypass"
   Bypass:
-    Access: "elevator.bypass.access"
-    Distance: "elevator.bypass.distance"
-    Item: "elevator.bypass.item"
-    Sneak: "elevator.bypass.sneak"
-
-# ============================================
-# TELEPORTER BLOCK FEATURES
-# ============================================
-TeleporterBlock:
-  Teleport:
-    Enabled: true
-    CheckPermission: false
-    Permission: "elevator.teleport"
-    DefaultAccess: "ALL"
-  Manage:
-    Enabled: true
-    CheckPermission: false
-    Permission: "elevator.manage"
-    DefaultAccess: "OWNER"
-  Break:
-    Enabled: true
-    CheckPermission: false
-    Permission: "elevator.break"
-    DefaultAccess: "ALL"
+    Cooldown:
+      Check: true
+      Permission: "elevator.bypass"
+    Access:
+      Check: true
+      Permission: "elevator.bypass.access"
+    Item:
+      Check: true
+      Permission: "elevator.bypass.item"
+    Sneak:
+      Check: true
+      Permission: "elevator.bypass.sneak"
 
 # ============================================
 # GUI MENUS
