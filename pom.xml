@@ -6,7 +6,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.MootComb</groupId>
-    <artifactId>Elevator</artifactId>
+    <artifactId>Teleporter</artifactId>
     <version>2.0</version>
     <packaging>jar</packaging>
 
