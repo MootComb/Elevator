@@ -1,5 +1,4 @@
 package com.MootComb.Elevator;
-
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -50,7 +49,6 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
 public final class Main extends JavaPlugin implements Listener {
     private static Main instance;
     public enum MessageType { CHAT, TITLE, SUBTITLE, NONE }
@@ -62,7 +60,7 @@ public final class Main extends JavaPlugin implements Listener {
     private static final int DEFAULT_END_ROD_COUNT = 5;
     private static final Pattern HEX_PATTERN = Pattern.compile("&#([A-Fa-f0-9]{6})");
     private static final Pattern SRGB_PATTERN = Pattern.compile("<#([A-Fa-f0-9]{6})>");
-    private static final String PREFIX = "&#FF5300Elevator &7| &f";
+    private String prefix;
     private Set<Material> elevatorBlocks = new HashSet<>();
     private int blockDistance;
     private boolean enableParticle;
@@ -86,215 +84,53 @@ public final class Main extends JavaPlugin implements Listener {
     private int cooldownTime;
     private String cooldownLocale;
     private MessageType cooldownMessageType;
-    private int elevatorTitleFadeIn;
-    private int elevatorTitleStay;
-    private int elevatorTitleFadeOut;
-    private String elevatorUpMessage;
-    private MessageType elevatorUpType;
-    private String elevatorDownMessage;
-    private MessageType elevatorDownType;
-    private String elevatorDangerMessage;
-    private MessageType elevatorDangerType;
-    private int teleporterTitleFadeIn;
-    private int teleporterTitleStay;
-    private int teleporterTitleFadeOut;
-    private String teleporterSuccessMessage;
-    private MessageType teleporterSuccessType;
-    private String teleporterBlockBoundMessage;
-    private MessageType teleporterBlockBoundType;
-    private String teleporterNoPairMessage;
-    private MessageType teleporterNoPairType;
-    private String teleporterNoCrossWorldMessage;
-    private MessageType teleporterNoCrossWorldType;
-    private String teleporterMissingItemMessage;
-    private MessageType teleporterMissingItemType;
-    private String teleporterDistanceTooFarMessage;
-    private MessageType teleporterDistanceTooFarType;
+    private int elevatorTitleFadeIn, elevatorTitleStay, elevatorTitleFadeOut;
+    private int teleporterTitleFadeIn, teleporterTitleStay, teleporterTitleFadeOut;
+    private String msgIdPrompt, msgIdInvalid, msgIdRange, msgIdUsed, msgIdSet;
+    private MessageType msgIdPromptType, msgIdInvalidType, msgIdRangeType, msgIdUsedType, msgIdSetType;
+    private String msgItemPrompt, msgItemDisabled, msgItemSet;
+    private MessageType msgItemPromptType, msgItemDisabledType, msgItemSetType;
+    private String msgNamePrompt, msgNameSet;
+    private MessageType msgNamePromptType, msgNameSetType;
+    private String msgPasswordPrompt, msgPasswordSet, msgPasswordDisabled, msgPasswordRequired, msgPasswordWrong, msgPasswordOk;
+    private MessageType msgPasswordPromptType, msgPasswordSetType, msgPasswordDisabledType, msgPasswordRequiredType, msgPasswordWrongType, msgPasswordOkType;
+    private String msgRedirectPrompt, msgRedirectAdded, msgRedirectRemoved, msgRedirectEmpty;
+    private MessageType msgRedirectPromptType, msgRedirectAddedType, msgRedirectRemovedType, msgRedirectEmptyType;
+    private String msgCancelled, msgNoPermission, msgBlockGone, msgPlayerNotFound, msgPlayerAdded;
+    private MessageType msgCancelledType, msgNoPermissionType, msgBlockGoneType, msgPlayerNotFoundType, msgPlayerAddedType;
+    private String msgNoBlockInSight, msgNotTeleporter, msgNoBlocksOwned, msgYourBlocks;
+    private MessageType msgNoBlockInSightType, msgNotTeleporterType, msgNoBlocksOwnedType, msgYourBlocksType;
+    private String msgRemoveUsage, msgRemoveInvalid, msgRemoveNone, msgRemoveNotOwner, msgRemoveSuccess;
+    private MessageType msgRemoveUsageType, msgRemoveInvalidType, msgRemoveNoneType, msgRemoveNotOwnerType, msgRemoveSuccessType;
+    private String msgUnknownSub, msgPlayersOnly, msgReloaded, msgListPrompt, msgHeaderInfo;
+    private MessageType msgUnknownSubType, msgPlayersOnlyType, msgReloadedType, msgListPromptType, msgHeaderInfoType;
+    private String msgViewDisabled, msgViewEnabled, msgViewUsage;
+    private MessageType msgViewDisabledType, msgViewEnabledType, msgViewUsageType;
+    private String msgTeleportSuccess, msgElevatorUp, msgElevatorDown, msgElevatorDanger;
+    private MessageType msgTeleportSuccessType, msgElevatorUpType, msgElevatorDownType, msgElevatorDangerType;
+    private String msgNoPair, msgNoCrossWorld, msgMissingItem, msgDistanceTooFar, msgBlockBound;
+    private MessageType msgNoPairType, msgNoCrossWorldType, msgMissingItemType, msgDistanceTooFarType, msgBlockBoundType;
     private boolean checkPermission;
-    private String permUse;
-    private String permBypass;
-    private String permTeleport;
-    private String permManage;
-    private String permBreakBypass;
-    private String permBypassAccess;
-    private String permBypassDistance;
-    private String permBypassItem;
-    private String permBypassSneak;
-    private boolean featureTeleportEnabled;
-    private boolean featureTeleportCheckPermission;
+    private String permUse, permBypass, permTeleport, permManage, permBreakBypass, permBypassAccess, permBypassDistance, permBypassItem, permBypassSneak;
+    private boolean featureTeleportEnabled, featureTeleportCheckPermission;
     private String featureTeleportPermission;
     private AccessLevel featureTeleportDefaultAccess;
-    private boolean featureManageEnabled;
-    private boolean featureManageCheckPermission;
+    private boolean featureManageEnabled, featureManageCheckPermission;
     private String featureManagePermission;
     private AccessLevel featureManageDefaultAccess;
-    private boolean featureBreakEnabled;
-    private boolean featureBreakCheckPermission;
+    private boolean featureBreakEnabled, featureBreakCheckPermission;
     private String featureBreakPermission;
     private AccessLevel featureBreakDefaultAccess;
-    private int viewDurationTicks;
-    private int viewUpdateTicks;
-    private int viewMaxDistance;
-    private int viewParticleCount;
+    private int viewDurationTicks, viewUpdateTicks, viewMaxDistance, viewParticleCount;
     private Particle viewParticleType;
-    private String viewPermAll;
-    private String viewPermOwner;
-    private String viewPermMember;
+    private String viewPermAll, viewPermOwner, viewPermMember;
     private boolean hologramsDefaultEnabled;
     private String hologramsDefaultColor;
-    private int hologramsViewDistance;
-    private int hologramsUpdateInterval;
-    private boolean hologramsShowId;
-    private boolean hologramsShowName;
-    private String hologramsFormat;
-    private String hologramsFormatNoName;
+    private int hologramsViewDistance, hologramsUpdateInterval;
     private double hologramsLineHeight;
     private boolean blockNamingEnabled;
     private int blockNamingMaxLength;
-    private String blockNamingDefaultName;
-    private int guiMainSize;
-    private String guiMainTitle;
-    private int guiMainSlotId;
-    private int guiMainSlotClick;
-    private int guiMainSlotSneak;
-    private int guiMainSlotRequiredItem;
-    private int guiMainSlotLocation;
-    private int guiMainSlotName;
-    private int guiMainSlotHologram;
-    private int guiMainSlotTeleportAccess;
-    private int guiMainSlotManageAccess;
-    private int guiMainSlotBreakAccess;
-    private int guiMainSlotMembers;
-    private int guiMainSlotClose;
-    private boolean guiFeatureId;
-    private boolean guiFeatureClick;
-    private boolean guiFeatureSneak;
-    private boolean guiFeatureRequiredItem;
-    private boolean guiFeatureLocation;
-    private boolean guiFeatureName;
-    private boolean guiFeatureHologram;
-    private boolean guiFeatureTeleportAccess;
-    private boolean guiFeatureManageAccess;
-    private boolean guiFeatureBreakAccess;
-    private boolean guiFeatureMembers;
-    private String guiMainIdItem;
-    private String guiMainIdItemEmpty;
-    private String guiMainIdItemLore;
-    private String guiMainClickItem;
-    private String guiMainClickItemLore;
-    private String guiMainSneakItem;
-    private String guiMainSneakItemLore;
-    private String guiMainRequiredItem;
-    private String guiMainRequiredItemLore;
-    private String guiMainRequiredItemLoreEmpty;
-    private String guiMainRequiredItemLoreClick;
-    private String guiMainLocationItem;
-    private String guiMainLocationItemLore;
-    private String guiMainLocationItemLoreClick;
-    private String guiMainNameItem;
-    private String guiMainNameItemEmpty;
-    private String guiMainNameItemLore;
-    private String guiMainHologramItem;
-    private String guiMainHologramItemLore;
-    private String guiMainTeleportAccessItem;
-    private String guiMainTeleportAccessItemLore;
-    private String guiMainTeleportAccessItemLore2;
-    private String guiMainManageAccessItem;
-    private String guiMainManageAccessItemLore;
-    private String guiMainManageAccessItemLore2;
-    private String guiMainBreakAccessItem;
-    private String guiMainBreakAccessItemLore;
-    private String guiMainBreakAccessItemLore2;
-    private String guiMainMembersItem;
-    private String guiMainMembersItemLore;
-    private String guiMainCloseItem;
-    private int guiMembersSize;
-    private String guiMembersTitle;
-    private int guiMembersSlotLocalMembers;
-    private int guiMembersSlotLocalGovernings;
-    private int guiMembersSlotGlobalMembers;
-    private int guiMembersSlotGlobalGovernings;
-    private int guiMembersSlotBack;
-    private boolean guiFeatureMembersLocal;
-    private boolean guiFeatureMembersGlobal;
-    private String guiMembersLocalMembers;
-    private String guiMembersLocalGovernings;
-    private String guiMembersGlobalMembers;
-    private String guiMembersGlobalGovernings;
-    private String guiMembersClickManage;
-    private String guiMembersBack;
-    private int guiListSize;
-    private String guiListTitle;
-    private String guiListPlayerItem;
-    private String guiListPlayerItemLore;
-    private String guiListPrevious;
-    private String guiListNext;
-    private String guiListBack;
-    private String guiListAddPlayer;
-    private String msgIdPrompt;
-    private MessageType msgIdPromptType;
-    private String msgIdInvalid;
-    private MessageType msgIdInvalidType;
-    private String msgIdRange;
-    private MessageType msgIdRangeType;
-    private String msgIdUsed;
-    private MessageType msgIdUsedType;
-    private String msgIdSet;
-    private MessageType msgIdSetType;
-    private String msgItemPrompt;
-    private MessageType msgItemPromptType;
-    private String msgItemDisabled;
-    private MessageType msgItemDisabledType;
-    private String msgItemSet;
-    private MessageType msgItemSetType;
-    private String msgNamePrompt;
-    private MessageType msgNamePromptType;
-    private String msgNameSet;
-    private MessageType msgNameSetType;
-    private String msgCancelled;
-    private MessageType msgCancelledType;
-    private String msgNoPermission;
-    private MessageType msgNoPermissionType;
-    private String msgBlockGone;
-    private MessageType msgBlockGoneType;
-    private String msgPlayerNotFound;
-    private MessageType msgPlayerNotFoundType;
-    private String msgPlayerAdded;
-    private MessageType msgPlayerAddedType;
-    private String msgNoBlockInSight;
-    private MessageType msgNoBlockInSightType;
-    private String msgNotTeleporter;
-    private MessageType msgNotTeleporterType;
-    private String msgNoBlocksOwned;
-    private MessageType msgNoBlocksOwnedType;
-    private String msgYourBlocks;
-    private MessageType msgYourBlocksType;
-    private String msgRemoveUsage;
-    private MessageType msgRemoveUsageType;
-    private String msgRemoveInvalid;
-    private MessageType msgRemoveInvalidType;
-    private String msgRemoveNone;
-    private MessageType msgRemoveNoneType;
-    private String msgRemoveNotOwner;
-    private MessageType msgRemoveNotOwnerType;
-    private String msgRemoveSuccess;
-    private MessageType msgRemoveSuccessType;
-    private String msgUnknownSub;
-    private MessageType msgUnknownSubType;
-    private String msgPlayersOnly;
-    private MessageType msgPlayersOnlyType;
-    private String msgReloaded;
-    private MessageType msgReloadedType;
-    private String msgListPrompt;
-    private MessageType msgListPromptType;
-    private String msgHeaderInfo;
-    private MessageType msgHeaderInfoType;
-    private String msgViewDisabled;
-    private MessageType msgViewDisabledType;
-    private String msgViewEnabled;
-    private MessageType msgViewEnabledType;
-    private String msgViewUsage;
-    private MessageType msgViewUsageType;
+    private String blockNamingDefaultName, blockNamingDefaultColor;
     private boolean debug;
     private File blocksFile;
     private FileConfiguration blocksConfig;
@@ -311,14 +147,13 @@ public final class Main extends JavaPlugin implements Listener {
     private final Map<UUID, GuiContext> guiContexts = new HashMap<>();
     private final Map<UUID, ViewSession> viewSessions = new HashMap<>();
     private final Map<String, UUID> hologramEntities = new ConcurrentHashMap<>();
-
+    private final Map<String, Integer> redirectIndex = new ConcurrentHashMap<>();
+    private final Map<UUID, PendingPassword> pendingPasswords = new HashMap<>();
     public static class BlockData {
         public int id;
         public UUID owner;
         public String world;
-        public int x;
-        public int y;
-        public int z;
+        public int x, y, z;
         public ClickType clickType = ClickType.RIGHT;
         public boolean requireSneak = false;
         public boolean requireItem = false;
@@ -328,52 +163,58 @@ public final class Main extends JavaPlugin implements Listener {
         public AccessLevel breakAccess = AccessLevel.ALL;
         public TeleportLocation teleportLocation = TeleportLocation.TOP;
         public String customDestinationWorld = "";
-        public double customDestinationX;
-        public double customDestinationY;
-        public double customDestinationZ;
-        public float customDestinationYaw;
-        public float customDestinationPitch;
+        public double customDestinationX, customDestinationY, customDestinationZ;
+        public float customDestinationYaw, customDestinationPitch;
         public String customName = "";
         public boolean hologramEnabled = false;
+        public boolean passwordEnabled = false;
+        public String password = "";
+        public boolean redirectEnabled = false;
+        public List<Integer> redirectChain = new ArrayList<>();
         public Set<UUID> members = new HashSet<>();
         public Set<UUID> governings = new HashSet<>();
         public String key() { return world + ":" + x + ":" + y + ":" + z; }
     }
-
     public static class ChatInputSession {
         public String type;
         public String blockKey;
+        public String listType;
         public long expireTime;
         public ChatInputSession(String type, String blockKey) {
-            this.type = type;
-            this.blockKey = blockKey;
+            this.type = type; this.blockKey = blockKey;
+            this.expireTime = System.currentTimeMillis() + 60000L;
+        }
+        public ChatInputSession(String type, String blockKey, String listType) {
+            this.type = type; this.blockKey = blockKey; this.listType = listType;
             this.expireTime = System.currentTimeMillis() + 60000L;
         }
     }
-
     public static class GuiContext {
         public String blockKey;
-        public String guiType;
+        public String menuName;
+        public String listType;
         public int page = 0;
-        public GuiContext(String blockKey, String guiType) {
-            this.blockKey = blockKey;
-            this.guiType = guiType;
+        public GuiContext(String blockKey, String menuName) {
+            this.blockKey = blockKey; this.menuName = menuName;
         }
     }
-
     public static class ViewSession {
         public String mode;
         public long endTime;
         public int taskId;
         public ViewSession(String mode, long endTime, int taskId) {
-            this.mode = mode;
-            this.endTime = endTime;
-            this.taskId = taskId;
+            this.mode = mode; this.endTime = endTime; this.taskId = taskId;
         }
     }
-
-    @Override
-    public void onEnable() {
+    public static class PendingPassword {
+        public String blockKey;
+        public long expireTime;
+        public PendingPassword(String blockKey) {
+            this.blockKey = blockKey;
+            this.expireTime = System.currentTimeMillis() + 60000L;
+        }
+    }
+    @Override public void onEnable() {
         instance = this;
         loadConfig();
         loadBlocks();
@@ -387,9 +228,7 @@ public final class Main extends JavaPlugin implements Listener {
         getLogger().info("   Max distance: " + blockDistance);
         getLogger().info("==================================================");
     }
-
-    @Override
-    public void onDisable() {
+    @Override public void onDisable() {
         for (ViewSession session : viewSessions.values()) Bukkit.getScheduler().cancelTask(session.taskId);
         viewSessions.clear();
         for (BlockData data : blockDataMap.values()) removeHologram(data);
@@ -397,40 +236,50 @@ public final class Main extends JavaPlugin implements Listener {
         saveBlocks();
         getLogger().info("Elevator Disabled!");
     }
-
     private String color(String message) {
         if (message == null) return "";
         String msg = message;
         Matcher matcher = HEX_PATTERN.matcher(msg);
         StringBuffer buffer = new StringBuffer();
-        while (matcher.find()) {
-            String hex = matcher.group(1);
-            matcher.appendReplacement(buffer, net.md_5.bungee.api.ChatColor.of("#" + hex).toString());
-        }
+        while (matcher.find()) matcher.appendReplacement(buffer, net.md_5.bungee.api.ChatColor.of("#" + matcher.group(1)).toString());
         matcher.appendTail(buffer);
         msg = buffer.toString();
         Matcher srgb = SRGB_PATTERN.matcher(msg);
         StringBuffer buffer2 = new StringBuffer();
-        while (srgb.find()) {
-            String hex = srgb.group(1);
-            srgb.appendReplacement(buffer2, net.md_5.bungee.api.ChatColor.of("#" + hex).toString());
-        }
+        while (srgb.find()) srgb.appendReplacement(buffer2, net.md_5.bungee.api.ChatColor.of("#" + srgb.group(1)).toString());
         srgb.appendTail(buffer2);
         msg = buffer2.toString();
         return ChatColor.translateAlternateColorCodes('&', msg);
     }
-
     private String stripColor(String message) {
         if (message == null) return "";
         return ChatColor.stripColor(color(message));
     }
-
-    private String prefixed(String message) { return color(PREFIX + message); }
     private void debug(String message) { if (debug) getLogger().info("[DEBUG] " + message); }
-
+    private MessageType msgType(String path, MessageType fallback) {
+        String val = getConfig().getString(path);
+        if (val == null) return fallback;
+        return getMessageType(val);
+    }
+    private MessageType getMessageType(String type) {
+        if (type == null) return MessageType.NONE;
+        String t = type.trim().toUpperCase(Locale.ROOT);
+        if (t.isEmpty() || t.equals("NONE") || t.equals("OFF") || t.equals("DISABLED")) return MessageType.NONE;
+        try { return MessageType.valueOf(t); } catch (IllegalArgumentException e) { return MessageType.CHAT; }
+    }
+    private AccessLevel getAccessLevel(String level) {
+        try { return AccessLevel.valueOf(level.toUpperCase(Locale.ROOT)); } catch (IllegalArgumentException e) { return AccessLevel.ALL; }
+    }
+    private ClickType getClickType(String type) {
+        try { return ClickType.valueOf(type.toUpperCase(Locale.ROOT)); } catch (IllegalArgumentException e) { return ClickType.RIGHT; }
+    }
+    private TeleportLocation getTeleportLocation(String type) {
+        try { return TeleportLocation.valueOf(type.toUpperCase(Locale.ROOT)); } catch (IllegalArgumentException e) { return TeleportLocation.TOP; }
+    }
     private void loadConfig() {
         saveDefaultConfig();
         reloadConfig();
+        prefix = getConfig().getString("Messages.Prefix", "&#FF5300Elevator &7| &f");
         elevatorBlocks.clear();
         for (String blockName : getConfig().getStringList("Elevator.BlockTypes")) {
             Material mat = Material.getMaterial(blockName);
@@ -443,8 +292,7 @@ public final class Main extends JavaPlugin implements Listener {
         usageSound = getConfig().getString("Elevator.UsageSound", "entity.enderman.teleport");
         activateSound = getConfig().getString("Elevator.ActivateSound", "entity.player.levelup");
         allowUnsafe = getConfig().getBoolean("Elevator.AllowUnsafe", false);
-        String particleName = getConfig().getString("Elevator.ParticleType", "SPELL_WITCH");
-        try { particleType = Particle.valueOf(particleName); }
+        try { particleType = Particle.valueOf(getConfig().getString("Elevator.ParticleType", "SPELL_WITCH")); }
         catch (IllegalArgumentException e) { particleType = Particle.SPELL_WITCH; }
         teleporterEnableParticle = getConfig().getBoolean("Teleporter.EnableParticle", true);
         teleporterUsageSound = getConfig().getString("Teleporter.UsageSound", "entity.enderman.teleport");
@@ -467,115 +315,12 @@ public final class Main extends JavaPlugin implements Listener {
         cooldownTime = getConfig().getInt("Cooldown.Time", 30);
         cooldownLocale = getConfig().getString("Cooldown.Locale", "&#FF5300Elevator &7| &fCooldown: %time%s");
         cooldownMessageType = getMessageType(getConfig().getString("Cooldown.MessageType", "SUBTITLE"));
-        ConfigurationSection elevatorTitle = getConfig().getConfigurationSection("ElevatorLocale.Title");
-        if (elevatorTitle != null) {
-            elevatorTitleFadeIn = elevatorTitle.getInt("FadeIn", 10);
-            elevatorTitleStay = elevatorTitle.getInt("Stay", 40);
-            elevatorTitleFadeOut = elevatorTitle.getInt("FadeOut", 10);
-        } else { elevatorTitleFadeIn = 10; elevatorTitleStay = 40; elevatorTitleFadeOut = 10; }
-        elevatorUpMessage = getConfig().getString("ElevatorLocale.ElevatorUp", "");
-        elevatorUpType = msgType("ElevatorLocale.ElevatorUpType", MessageType.SUBTITLE);
-        elevatorDownMessage = getConfig().getString("ElevatorLocale.ElevatorDown", "");
-        elevatorDownType = msgType("ElevatorLocale.ElevatorDownType", MessageType.SUBTITLE);
-        elevatorDangerMessage = getConfig().getString("ElevatorLocale.ElevatorDanger", "");
-        elevatorDangerType = msgType("ElevatorLocale.ElevatorDangerType", MessageType.SUBTITLE);
-        ConfigurationSection teleporterTitle = getConfig().getConfigurationSection("TeleporterLocale.Title");
-        if (teleporterTitle != null) {
-            teleporterTitleFadeIn = teleporterTitle.getInt("FadeIn", 10);
-            teleporterTitleStay = teleporterTitle.getInt("Stay", 60);
-            teleporterTitleFadeOut = teleporterTitle.getInt("FadeOut", 10);
-        } else { teleporterTitleFadeIn = 10; teleporterTitleStay = 60; teleporterTitleFadeOut = 10; }
-        teleporterSuccessMessage = getConfig().getString("TeleporterLocale.TeleportSuccess", "");
-        teleporterSuccessType = msgType("TeleporterLocale.TeleportSuccessType", MessageType.SUBTITLE);
-        teleporterBlockBoundMessage = getConfig().getString("TeleporterLocale.BlockBound", "");
-        teleporterBlockBoundType = msgType("TeleporterLocale.BlockBoundType", MessageType.CHAT);
-        teleporterNoPairMessage = getConfig().getString("TeleporterLocale.NoPair", "");
-        teleporterNoPairType = msgType("TeleporterLocale.NoPairType", MessageType.CHAT);
-        teleporterNoCrossWorldMessage = getConfig().getString("TeleporterLocale.NoCrossWorld", "");
-        teleporterNoCrossWorldType = msgType("TeleporterLocale.NoCrossWorldType", MessageType.CHAT);
-        teleporterMissingItemMessage = getConfig().getString("TeleporterLocale.MissingItem", "");
-        teleporterMissingItemType = msgType("TeleporterLocale.MissingItemType", MessageType.CHAT);
-        teleporterDistanceTooFarMessage = getConfig().getString("TeleporterLocale.DistanceTooFar", "");
-        teleporterDistanceTooFarType = msgType("TeleporterLocale.DistanceTooFarType", MessageType.CHAT);
-        guiMainSize = getConfig().getInt("GUI.Main.Size", 54);
-        guiMainTitle = getConfig().getString("GUI.Main.Title", "&7Teleporter Block");
-        guiMainSlotId = getConfig().getInt("GUI.Main.Slot.Id", 4);
-        guiMainSlotClick = getConfig().getInt("GUI.Main.Slot.Click", 19);
-        guiMainSlotSneak = getConfig().getInt("GUI.Main.Slot.Sneak", 20);
-        guiMainSlotRequiredItem = getConfig().getInt("GUI.Main.Slot.RequiredItem", 21);
-        guiMainSlotLocation = getConfig().getInt("GUI.Main.Slot.Location", 22);
-        guiMainSlotName = getConfig().getInt("GUI.Main.Slot.Name", 23);
-        guiMainSlotHologram = getConfig().getInt("GUI.Main.Slot.Hologram", 24);
-        guiMainSlotTeleportAccess = getConfig().getInt("GUI.Main.Slot.TeleportAccess", 29);
-        guiMainSlotManageAccess = getConfig().getInt("GUI.Main.Slot.ManageAccess", 30);
-        guiMainSlotBreakAccess = getConfig().getInt("GUI.Main.Slot.BreakAccess", 31);
-        guiMainSlotMembers = getConfig().getInt("GUI.Main.Slot.Members", 32);
-        guiMainSlotClose = getConfig().getInt("GUI.Main.Slot.Close", 49);
-        guiFeatureId = getConfig().getBoolean("GUI.Features.Id", true);
-        guiFeatureClick = getConfig().getBoolean("GUI.Features.Click", true);
-        guiFeatureSneak = getConfig().getBoolean("GUI.Features.Sneak", true);
-        guiFeatureRequiredItem = getConfig().getBoolean("GUI.Features.RequiredItem", true);
-        guiFeatureLocation = getConfig().getBoolean("GUI.Features.Location", true);
-        guiFeatureName = getConfig().getBoolean("GUI.Features.Name", true);
-        guiFeatureHologram = getConfig().getBoolean("GUI.Features.Hologram", true);
-        guiFeatureTeleportAccess = getConfig().getBoolean("GUI.Features.TeleportAccess", true);
-        guiFeatureManageAccess = getConfig().getBoolean("GUI.Features.ManageAccess", true);
-        guiFeatureBreakAccess = getConfig().getBoolean("GUI.Features.BreakAccess", true);
-        guiFeatureMembers = getConfig().getBoolean("GUI.Features.Members", true);
-        guiMainIdItem = getConfig().getString("GUI.Main.IdItem", "&#FF5300ID: %id%");
-        guiMainIdItemEmpty = getConfig().getString("GUI.Main.IdItemEmpty", "&#FF5300ID: Not set");
-        guiMainIdItemLore = getConfig().getString("GUI.Main.IdItemLore", "&7Click to change ID");
-        guiMainClickItem = getConfig().getString("GUI.Main.ClickItem", "&#FF5300Click Type: %value%");
-        guiMainClickItemLore = getConfig().getString("GUI.Main.ClickItemLore", "&7Left or Right mouse button");
-        guiMainSneakItem = getConfig().getString("GUI.Main.SneakItem", "&#FF5300Require Sneak: %value%");
-        guiMainSneakItemLore = getConfig().getString("GUI.Main.SneakItemLore", "&7Toggle sneak requirement");
-        guiMainRequiredItem = getConfig().getString("GUI.Main.RequiredItem", "&#FF5300Require Item: %value%");
-        guiMainRequiredItemLore = getConfig().getString("GUI.Main.RequiredItemLore", "&7Required: %name%");
-        guiMainRequiredItemLoreEmpty = getConfig().getString("GUI.Main.RequiredItemLoreEmpty", "&7Required: -");
-        guiMainRequiredItemLoreClick = getConfig().getString("GUI.Main.RequiredItemLoreClick", "&7Click to change");
-        guiMainLocationItem = getConfig().getString("GUI.Main.LocationItem", "&#FF5300Teleport Location: %value%");
-        guiMainLocationItemLore = getConfig().getString("GUI.Main.LocationItemLore", "&7TOP or CURRENT");
-        guiMainLocationItemLoreClick = getConfig().getString("GUI.Main.LocationItemLoreClick", "&7Click to cycle");
-        guiMainNameItem = getConfig().getString("GUI.Main.NameItem", "&#FF5300Name: %value%");
-        guiMainNameItemEmpty = getConfig().getString("GUI.Main.NameItemEmpty", "&#FF5300Name: Not set");
-        guiMainNameItemLore = getConfig().getString("GUI.Main.NameItemLore", "&7Click to rename (supports &f&7&#RRGGBB <#RRGGBB>)");
-        guiMainHologramItem = getConfig().getString("GUI.Main.HologramItem", "&#FF5300Hologram: %value%");
-        guiMainHologramItemLore = getConfig().getString("GUI.Main.HologramItemLore", "&7Toggle hologram above block");
-        guiMainTeleportAccessItem = getConfig().getString("GUI.Main.TeleportAccessItem", "&#FF5300Teleport Access: %value%");
-        guiMainTeleportAccessItemLore = getConfig().getString("GUI.Main.TeleportAccessItemLore", "&7Click to cycle");
-        guiMainTeleportAccessItemLore2 = getConfig().getString("GUI.Main.TeleportAccessItemLore2", "&7OWNER / MEMBERS / GOVERNINGS / ALL");
-        guiMainManageAccessItem = getConfig().getString("GUI.Main.ManageAccessItem", "&#FF5300Manage Access: %value%");
-        guiMainManageAccessItemLore = getConfig().getString("GUI.Main.ManageAccessItemLore", "&7Click to cycle");
-        guiMainManageAccessItemLore2 = getConfig().getString("GUI.Main.ManageAccessItemLore2", "&7OWNER / GOVERNINGS / ALL");
-        guiMainBreakAccessItem = getConfig().getString("GUI.Main.BreakAccessItem", "&#FF5300Break Access: %value%");
-        guiMainBreakAccessItemLore = getConfig().getString("GUI.Main.BreakAccessItemLore", "&7Click to cycle");
-        guiMainBreakAccessItemLore2 = getConfig().getString("GUI.Main.BreakAccessItemLore2", "&7OWNER / MEMBERS / GOVERNINGS / ALL");
-        guiMainMembersItem = getConfig().getString("GUI.Main.MembersItem", "&#FF5300Members & Governings");
-        guiMainMembersItemLore = getConfig().getString("GUI.Main.MembersItemLore", "&7Manage local and global lists");
-        guiMainCloseItem = getConfig().getString("GUI.Main.CloseItem", "&#FF5300Close");
-        guiMembersSize = getConfig().getInt("GUI.Members.Size", 54);
-        guiMembersTitle = getConfig().getString("GUI.Members.Title", "&7Members & Governings");
-        guiMembersSlotLocalMembers = getConfig().getInt("GUI.Members.Slot.LocalMembers", 20);
-        guiMembersSlotLocalGovernings = getConfig().getInt("GUI.Members.Slot.LocalGovernings", 21);
-        guiMembersSlotGlobalMembers = getConfig().getInt("GUI.Members.Slot.GlobalMembers", 23);
-        guiMembersSlotGlobalGovernings = getConfig().getInt("GUI.Members.Slot.GlobalGovernings", 24);
-        guiMembersSlotBack = getConfig().getInt("GUI.Members.Slot.Back", 49);
-        guiFeatureMembersLocal = getConfig().getBoolean("GUI.Members.Features.Local", true);
-        guiFeatureMembersGlobal = getConfig().getBoolean("GUI.Members.Features.Global", true);
-        guiMembersLocalMembers = getConfig().getString("GUI.Members.LocalMembers", "&#FF5300Local Members: %count%");
-        guiMembersLocalGovernings = getConfig().getString("GUI.Members.LocalGovernings", "&#FF5300Local Governings: %count%");
-        guiMembersGlobalMembers = getConfig().getString("GUI.Members.GlobalMembers", "&#FF5300Global Members: %count%");
-        guiMembersGlobalGovernings = getConfig().getString("GUI.Members.GlobalGovernings", "&#FF5300Global Governings: %count%");
-        guiMembersClickManage = getConfig().getString("GUI.Members.ClickManage", "&7Click to manage");
-        guiMembersBack = getConfig().getString("GUI.Members.Back", "&#FF5300Back");
-        guiListSize = getConfig().getInt("GUI.List.Size", 54);
-        guiListTitle = getConfig().getString("GUI.List.Title", "&7%list%");
-        guiListPlayerItem = getConfig().getString("GUI.List.PlayerItem", "&#FF5300%name%");
-        guiListPlayerItemLore = getConfig().getString("GUI.List.PlayerItemLore", "&7Click to remove");
-        guiListPrevious = getConfig().getString("GUI.List.Previous", "&#FF5300Previous");
-        guiListNext = getConfig().getString("GUI.List.Next", "&#FF5300Next");
-        guiListBack = getConfig().getString("GUI.List.Back", "&#FF5300Back");
-        guiListAddPlayer = getConfig().getString("GUI.List.AddPlayer", "&#FF5300Add player");
+        ConfigurationSection et = getConfig().getConfigurationSection("Titles.Elevator");
+        if (et != null) { elevatorTitleFadeIn = et.getInt("FadeIn", 10); elevatorTitleStay = et.getInt("Stay", 40); elevatorTitleFadeOut = et.getInt("FadeOut", 10); }
+        else { elevatorTitleFadeIn = 10; elevatorTitleStay = 40; elevatorTitleFadeOut = 10; }
+        ConfigurationSection tt = getConfig().getConfigurationSection("Titles.Teleporter");
+        if (tt != null) { teleporterTitleFadeIn = tt.getInt("FadeIn", 10); teleporterTitleStay = tt.getInt("Stay", 60); teleporterTitleFadeOut = tt.getInt("FadeOut", 10); }
+        else { teleporterTitleFadeIn = 10; teleporterTitleStay = 60; teleporterTitleFadeOut = 10; }
         msgIdPrompt = getConfig().getString("Messages.IdPrompt", "");
         msgIdPromptType = msgType("Messages.IdPromptType", MessageType.CHAT);
         msgIdInvalid = getConfig().getString("Messages.IdInvalid", "");
@@ -596,6 +341,26 @@ public final class Main extends JavaPlugin implements Listener {
         msgNamePromptType = msgType("Messages.NamePromptType", MessageType.CHAT);
         msgNameSet = getConfig().getString("Messages.NameSet", "");
         msgNameSetType = msgType("Messages.NameSetType", MessageType.CHAT);
+        msgPasswordPrompt = getConfig().getString("Messages.PasswordPrompt", "");
+        msgPasswordPromptType = msgType("Messages.PasswordPromptType", MessageType.CHAT);
+        msgPasswordSet = getConfig().getString("Messages.PasswordSet", "");
+        msgPasswordSetType = msgType("Messages.PasswordSetType", MessageType.CHAT);
+        msgPasswordDisabled = getConfig().getString("Messages.PasswordDisabled", "");
+        msgPasswordDisabledType = msgType("Messages.PasswordDisabledType", MessageType.CHAT);
+        msgPasswordRequired = getConfig().getString("Messages.PasswordRequired", "");
+        msgPasswordRequiredType = msgType("Messages.PasswordRequiredType", MessageType.CHAT);
+        msgPasswordWrong = getConfig().getString("Messages.PasswordWrong", "");
+        msgPasswordWrongType = msgType("Messages.PasswordWrongType", MessageType.CHAT);
+        msgPasswordOk = getConfig().getString("Messages.PasswordOk", "");
+        msgPasswordOkType = msgType("Messages.PasswordOkType", MessageType.CHAT);
+        msgRedirectPrompt = getConfig().getString("Messages.RedirectPrompt", "");
+        msgRedirectPromptType = msgType("Messages.RedirectPromptType", MessageType.CHAT);
+        msgRedirectAdded = getConfig().getString("Messages.RedirectAdded", "");
+        msgRedirectAddedType = msgType("Messages.RedirectAddedType", MessageType.CHAT);
+        msgRedirectRemoved = getConfig().getString("Messages.RedirectRemoved", "");
+        msgRedirectRemovedType = msgType("Messages.RedirectRemovedType", MessageType.CHAT);
+        msgRedirectEmpty = getConfig().getString("Messages.RedirectEmpty", "");
+        msgRedirectEmptyType = msgType("Messages.RedirectEmptyType", MessageType.CHAT);
         msgCancelled = getConfig().getString("Messages.Cancelled", "");
         msgCancelledType = msgType("Messages.CancelledType", MessageType.CHAT);
         msgNoPermission = getConfig().getString("Messages.NoPermission", "");
@@ -640,6 +405,24 @@ public final class Main extends JavaPlugin implements Listener {
         msgViewEnabledType = msgType("Messages.ViewEnabledType", MessageType.CHAT);
         msgViewUsage = getConfig().getString("Messages.ViewUsage", "");
         msgViewUsageType = msgType("Messages.ViewUsageType", MessageType.CHAT);
+        msgTeleportSuccess = getConfig().getString("Messages.TeleportSuccess", "");
+        msgTeleportSuccessType = msgType("Messages.TeleportSuccessType", MessageType.SUBTITLE);
+        msgElevatorUp = getConfig().getString("Messages.ElevatorUp", "");
+        msgElevatorUpType = msgType("Messages.ElevatorUpType", MessageType.SUBTITLE);
+        msgElevatorDown = getConfig().getString("Messages.ElevatorDown", "");
+        msgElevatorDownType = msgType("Messages.ElevatorDownType", MessageType.SUBTITLE);
+        msgElevatorDanger = getConfig().getString("Messages.ElevatorDanger", "");
+        msgElevatorDangerType = msgType("Messages.ElevatorDangerType", MessageType.SUBTITLE);
+        msgNoPair = getConfig().getString("Messages.NoPair", "");
+        msgNoPairType = msgType("Messages.NoPairType", MessageType.CHAT);
+        msgNoCrossWorld = getConfig().getString("Messages.NoCrossWorld", "");
+        msgNoCrossWorldType = msgType("Messages.NoCrossWorldType", MessageType.CHAT);
+        msgMissingItem = getConfig().getString("Messages.MissingItem", "");
+        msgMissingItemType = msgType("Messages.MissingItemType", MessageType.CHAT);
+        msgDistanceTooFar = getConfig().getString("Messages.DistanceTooFar", "");
+        msgDistanceTooFarType = msgType("Messages.DistanceTooFarType", MessageType.CHAT);
+        msgBlockBound = getConfig().getString("Messages.BlockBound", "");
+        msgBlockBoundType = msgType("Messages.BlockBoundType", MessageType.CHAT);
         viewDurationTicks = getConfig().getInt("View.DurationTicks", 200);
         viewUpdateTicks = getConfig().getInt("View.UpdateEveryTicks", 5);
         viewMaxDistance = getConfig().getInt("View.MaxDistance", 64);
@@ -653,14 +436,11 @@ public final class Main extends JavaPlugin implements Listener {
         hologramsDefaultColor = getConfig().getString("Holograms.DefaultColor", "&f");
         hologramsViewDistance = getConfig().getInt("Holograms.ViewDistance", 16);
         hologramsUpdateInterval = getConfig().getInt("Holograms.UpdateIntervalTicks", 20);
-        hologramsShowId = getConfig().getBoolean("Holograms.ShowId", false);
-        hologramsShowName = getConfig().getBoolean("Holograms.ShowName", true);
-        hologramsFormat = getConfig().getString("Holograms.Format", "%name%");
-        hologramsFormatNoName = getConfig().getString("Holograms.FormatNoName", "");
         hologramsLineHeight = getConfig().getDouble("Holograms.LineHeight", 0.3);
         blockNamingEnabled = getConfig().getBoolean("BlockNaming.Enabled", true);
         blockNamingMaxLength = getConfig().getInt("BlockNaming.MaxLength", 64);
         blockNamingDefaultName = getConfig().getString("BlockNaming.DefaultName", "");
+        blockNamingDefaultColor = getConfig().getString("BlockNaming.DefaultColor", "&f");
         disabledWorlds.clear();
         disabledWorlds.addAll(getConfig().getStringList("DisabledWorlds"));
         checkPermission = getConfig().getBoolean("Permissions.CheckPermission", false);
@@ -687,42 +467,8 @@ public final class Main extends JavaPlugin implements Listener {
         featureBreakDefaultAccess = getAccessLevel(getConfig().getString("TeleporterBlock.Break.DefaultAccess", "ALL"));
         debug = getConfig().getBoolean("Debug", false);
     }
-
-    private MessageType msgType(String path, MessageType fallback) {
-        String val = getConfig().getString(path);
-        if (val == null) return fallback;
-        return getMessageType(val);
-    }
-
-    private MessageType getMessageType(String type) {
-        if (type == null) return MessageType.NONE;
-        String t = type.trim().toUpperCase(Locale.ROOT);
-        if (t.isEmpty() || t.equals("NONE") || t.equals("OFF") || t.equals("DISABLED")) return MessageType.NONE;
-        try { return MessageType.valueOf(t); }
-        catch (IllegalArgumentException e) { return MessageType.CHAT; }
-    }
-
-    private AccessLevel getAccessLevel(String level) {
-        try { return AccessLevel.valueOf(level.toUpperCase(Locale.ROOT)); }
-        catch (IllegalArgumentException e) { return AccessLevel.ALL; }
-    }
-
-    private ClickType getClickType(String type) {
-        try { return ClickType.valueOf(type.toUpperCase(Locale.ROOT)); }
-        catch (IllegalArgumentException e) { return ClickType.RIGHT; }
-    }
-
-    private TeleportLocation getTeleportLocation(String type) {
-        try { return TeleportLocation.valueOf(type.toUpperCase(Locale.ROOT)); }
-        catch (IllegalArgumentException e) { return TeleportLocation.TOP; }
-    }
-
     private void loadBlocks() {
-        blockDataMap.clear();
-        idIndex.clear();
-        playerBlocks.clear();
-        globalMembers.clear();
-        globalGovernings.clear();
+        blockDataMap.clear(); idIndex.clear(); playerBlocks.clear(); globalMembers.clear(); globalGovernings.clear(); redirectIndex.clear();
         blocksFile = new File(getDataFolder(), "blocks.yml");
         if (!blocksFile.exists()) {
             try { getDataFolder().mkdirs(); blocksFile.createNewFile(); }
@@ -736,13 +482,9 @@ public final class Main extends JavaPlugin implements Listener {
                 if (sec == null) continue;
                 BlockData data = new BlockData();
                 data.id = sec.getInt("Id", 0);
-                String ownerStr = sec.getString("Owner", "");
-                try { data.owner = UUID.fromString(ownerStr); }
-                catch (IllegalArgumentException e) { continue; }
+                try { data.owner = UUID.fromString(sec.getString("Owner", "")); } catch (IllegalArgumentException e) { continue; }
                 data.world = sec.getString("World", "world");
-                data.x = sec.getInt("X", 0);
-                data.y = sec.getInt("Y", 0);
-                data.z = sec.getInt("Z", 0);
+                data.x = sec.getInt("X", 0); data.y = sec.getInt("Y", 0); data.z = sec.getInt("Z", 0);
                 data.clickType = getClickType(sec.getString("ClickType", "RIGHT"));
                 data.requireSneak = sec.getBoolean("RequireSneak", false);
                 data.requireItem = sec.getBoolean("RequireItem", false);
@@ -759,6 +501,10 @@ public final class Main extends JavaPlugin implements Listener {
                 data.customDestinationPitch = (float) sec.getDouble("CustomDestination.Pitch", 0);
                 data.customName = sec.getString("CustomName", "");
                 data.hologramEnabled = sec.getBoolean("HologramEnabled", hologramsDefaultEnabled);
+                data.passwordEnabled = sec.getBoolean("PasswordEnabled", false);
+                data.password = sec.getString("Password", "");
+                data.redirectEnabled = sec.getBoolean("RedirectEnabled", false);
+                data.redirectChain = sec.getIntegerList("RedirectChain");
                 for (String member : sec.getStringList("Members")) { try { data.members.add(UUID.fromString(member)); } catch (IllegalArgumentException ignored) {} }
                 for (String gov : sec.getStringList("Governings")) { try { data.governings.add(UUID.fromString(gov)); } catch (IllegalArgumentException ignored) {} }
                 for (String gov : sec.getStringList("Owners")) { try { data.governings.add(UUID.fromString(gov)); } catch (IllegalArgumentException ignored) {} }
@@ -784,7 +530,6 @@ public final class Main extends JavaPlugin implements Listener {
             }
         }
     }
-
     private void saveBlocks() {
         if (blocksConfig == null || blocksFile == null) return;
         blocksConfig.set("Blocks", null);
@@ -813,6 +558,10 @@ public final class Main extends JavaPlugin implements Listener {
             blocksConfig.set(path + ".CustomDestination.Pitch", data.customDestinationPitch);
             blocksConfig.set(path + ".CustomName", data.customName);
             blocksConfig.set(path + ".HologramEnabled", data.hologramEnabled);
+            blocksConfig.set(path + ".PasswordEnabled", data.passwordEnabled);
+            blocksConfig.set(path + ".Password", data.password);
+            blocksConfig.set(path + ".RedirectEnabled", data.redirectEnabled);
+            blocksConfig.set(path + ".RedirectChain", data.redirectChain);
             List<String> members = new ArrayList<>();
             for (UUID u : data.members) members.add(u.toString());
             blocksConfig.set(path + ".Members", members);
@@ -838,41 +587,27 @@ public final class Main extends JavaPlugin implements Listener {
         try { blocksConfig.save(blocksFile); }
         catch (IOException e) { getLogger().severe("Could not save blocks.yml: " + e.getMessage()); }
     }
-
-    private void sendMessage(Player player, String message, MessageType type) {
+    private void sendMessage(Player player, String message, MessageType type, int fadeIn, int stay, int fadeOut) {
         if (type == null || type == MessageType.NONE) return;
         if (message == null || message.isEmpty()) return;
         String formatted = color(message);
         if (formatted.isEmpty()) return;
         switch (type) {
             case CHAT: player.sendMessage(formatted); break;
-            case TITLE: player.sendTitle(formatted, "", elevatorTitleFadeIn, elevatorTitleStay, elevatorTitleFadeOut); break;
-            case SUBTITLE: player.sendTitle("", formatted, elevatorTitleFadeIn, elevatorTitleStay, elevatorTitleFadeOut); break;
-            default: break;
+            case TITLE: player.sendTitle(formatted, "", fadeIn, stay, fadeOut); break;
+            case SUBTITLE: player.sendTitle("", formatted, fadeIn, stay, fadeOut); break;
         }
     }
-
-    private void sendTeleporterMessage(Player player, String message, MessageType type) {
-        if (type == null || type == MessageType.NONE) return;
-        if (message == null || message.isEmpty()) return;
-        String formatted = color(message);
-        if (formatted.isEmpty()) return;
-        switch (type) {
-            case CHAT: player.sendMessage(formatted); break;
-            case TITLE: player.sendTitle(formatted, "", teleporterTitleFadeIn, teleporterTitleStay, teleporterTitleFadeOut); break;
-            case SUBTITLE: player.sendTitle("", formatted, teleporterTitleFadeIn, teleporterTitleStay, teleporterTitleFadeOut); break;
-            default: break;
-        }
-    }
-
+    private void sendMessage(Player player, String message, MessageType type) { sendMessage(player, message, type, elevatorTitleFadeIn, elevatorTitleStay, elevatorTitleFadeOut); }
+    private void sendTeleporterMessage(Player player, String message, MessageType type) { sendMessage(player, message, type, teleporterTitleFadeIn, teleporterTitleStay, teleporterTitleFadeOut); }
+    private void sendPrefixed(Player player, String message, MessageType type) { if (message != null && !message.isEmpty()) sendMessage(player, prefix + message, type); }
+    private void sendTeleporterPrefixed(Player player, String message, MessageType type) { if (message != null && !message.isEmpty()) sendTeleporterMessage(player, prefix + message, type); }
     private boolean hasPermission(Player player, String perm) {
         if (!checkPermission) return true;
         if (perm == null || perm.isEmpty()) return true;
         return player.hasPermission(perm);
     }
-
     private boolean isInDisabledWorld(Player player) { return disabledWorlds.contains(player.getWorld().getName()); }
-
     private boolean isOnCooldown(Player player) {
         if (!enableCooldown) return false;
         if (hasPermission(player, permBypass)) return false;
@@ -887,18 +622,13 @@ public final class Main extends JavaPlugin implements Listener {
         cooldownMap.remove(player.getUniqueId());
         return false;
     }
-
-    private void setCooldown(Player player) {
-        if (enableCooldown && !hasPermission(player, permBypass)) cooldownMap.put(player.getUniqueId(), System.currentTimeMillis());
-    }
-
+    private void setCooldown(Player player) { if (enableCooldown && !hasPermission(player, permBypass)) cooldownMap.put(player.getUniqueId(), System.currentTimeMillis()); }
     private boolean isSafeLocation(Location loc, boolean isTeleporter) {
         boolean unsafeAllowed = isTeleporter ? teleporterAllowUnsafe : allowUnsafe;
         if (unsafeAllowed) return true;
         Material type = loc.getBlock().getType();
         return !type.isSolid() && type != Material.LAVA && type != Material.FIRE;
     }
-
     private void spawnElevatorParticles(Location loc) {
         if (!enableParticle) return;
         World world = loc.getWorld();
@@ -906,7 +636,6 @@ public final class Main extends JavaPlugin implements Listener {
         world.spawnParticle(particleType, loc.clone().add(0, 0.5, 0), particleCount, 0.3, 0.1, 0.3, 0.1);
         world.spawnParticle(Particle.END_ROD, loc.clone().add(0, 0.5, 0), DEFAULT_END_ROD_COUNT, 0.2, 0.2, 0.2, 0.05);
     }
-
     private void spawnTeleporterParticles(Location loc) {
         if (!teleporterEnableParticle) return;
         World world = loc.getWorld();
@@ -914,7 +643,6 @@ public final class Main extends JavaPlugin implements Listener {
         world.spawnParticle(particleType, loc.clone().add(0, 0.5, 0), particleCount, 0.3, 0.1, 0.3, 0.1);
         world.spawnParticle(Particle.END_ROD, loc.clone().add(0, 0.5, 0), DEFAULT_END_ROD_COUNT, 0.2, 0.2, 0.2, 0.05);
     }
-
     private void playEffects(Location loc, String soundName, boolean isTeleporter) {
         if (soundName != null && !soundName.isEmpty()) {
             try {
@@ -923,10 +651,8 @@ public final class Main extends JavaPlugin implements Listener {
                 if (world != null) world.playSound(loc, sound, 0.5f, 1.2f);
             } catch (IllegalArgumentException ignored) {}
         }
-        if (isTeleporter) spawnTeleporterParticles(loc);
-        else spawnElevatorParticles(loc);
+        if (isTeleporter) spawnTeleporterParticles(loc); else spawnElevatorParticles(loc);
     }
-
     private void teleportDown(Player player) {
         if (isInDisabledWorld(player)) return;
         if (!hasPermission(player, permUse)) return;
@@ -937,16 +663,15 @@ public final class Main extends JavaPlugin implements Listener {
             Location checkLoc = feetLocation.clone().subtract(0, i, 0);
             if (elevatorBlocks.contains(checkLoc.getBlock().getType())) {
                 Location targetLoc = checkLoc.clone();
-                if (!isSafeLocation(targetLoc, false)) { sendMessage(player, elevatorDangerMessage, elevatorDangerType); return; }
+                if (!isSafeLocation(targetLoc, false)) { sendPrefixed(player, msgElevatorDanger, msgElevatorDangerType); return; }
                 player.teleport(targetLoc);
                 playEffects(targetLoc, usageSound, false);
-                sendMessage(player, elevatorDownMessage, elevatorDownType);
+                sendPrefixed(player, msgElevatorDown, msgElevatorDownType);
                 setCooldown(player);
                 return;
             }
         }
     }
-
     private void teleportUp(Player player) {
         if (isInDisabledWorld(player)) return;
         if (!hasPermission(player, permUse)) return;
@@ -957,14 +682,14 @@ public final class Main extends JavaPlugin implements Listener {
             Location checkLoc = feetLocation.clone().add(0, i, 0);
             if (elevatorBlocks.contains(checkLoc.getBlock().getType())) {
                 Location targetLoc = checkLoc.clone();
-                if (!isSafeLocation(targetLoc, false)) { sendMessage(player, elevatorDangerMessage, elevatorDangerType); return; }
+                if (!isSafeLocation(targetLoc, false)) { sendPrefixed(player, msgElevatorDanger, msgElevatorDangerType); return; }
                 player.setVelocity(player.getVelocity().setY(0));
                 final Location finalLoc = targetLoc;
                 new BukkitRunnable() {
                     @Override public void run() {
                         player.teleport(finalLoc);
                         playEffects(finalLoc, usageSound, false);
-                        sendMessage(player, elevatorUpMessage, elevatorUpType);
+                        sendPrefixed(player, msgElevatorUp, msgElevatorUpType);
                         setCooldown(player);
                     }
                 }.runTask(this);
@@ -972,7 +697,6 @@ public final class Main extends JavaPlugin implements Listener {
             }
         }
     }
-
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onPlayerJump(PlayerMoveEvent event) {
         Player player = event.getPlayer();
@@ -985,19 +709,18 @@ public final class Main extends JavaPlugin implements Listener {
                 Location checkLoc = feetLocation.clone().add(0, i, 0);
                 if (elevatorBlocks.contains(checkLoc.getBlock().getType())) {
                     Location targetLoc = checkLoc.clone().subtract(0, 0.65, 0);
-                    if (!isSafeLocation(targetLoc, false)) { sendMessage(player, elevatorDangerMessage, elevatorDangerType); return; }
+                    if (!isSafeLocation(targetLoc, false)) { sendPrefixed(player, msgElevatorDanger, msgElevatorDangerType); return; }
                     player.setVelocity(new org.bukkit.util.Vector(0, 0, 0));
                     player.setFallDistance(0);
                     player.teleport(targetLoc);
                     playEffects(targetLoc, usageSound, false);
-                    sendMessage(player, elevatorUpMessage, elevatorUpType);
+                    sendPrefixed(player, msgElevatorUp, msgElevatorUpType);
                     setCooldown(player);
                     return;
                 }
             }
         }
     }
-
     @EventHandler
     public void onPlayerSneak(PlayerToggleSneakEvent event) {
         Player player = event.getPlayer();
@@ -1010,7 +733,6 @@ public final class Main extends JavaPlugin implements Listener {
             }
         }.runTaskLater(this, SNEAK_CHECK_DELAY_TICKS);
     }
-
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = false)
     public void onPlayerInteractLowest(PlayerInteractEvent event) {
         Player player = event.getPlayer();
@@ -1043,7 +765,6 @@ public final class Main extends JavaPlugin implements Listener {
             }.runTaskLater(this, 5L);
         }
     }
-
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onPlayerInteract(PlayerInteractEvent event) {
         Player player = event.getPlayer();
@@ -1066,7 +787,7 @@ public final class Main extends JavaPlugin implements Listener {
             event.setCancelled(true);
             if (!featureManageEnabled) { debug("Manage disabled"); return; }
             if (!canManage(player, data)) { debug("No manage rights for " + player.getName()); return; }
-            openMainMenu(player, data);
+            openGui(player, data, "main");
             return;
         }
         if (!featureTeleportEnabled) { debug("Teleport disabled"); return; }
@@ -1081,7 +802,7 @@ public final class Main extends JavaPlugin implements Listener {
         boolean bypassItem = checkPermission && player.hasPermission(permBypassItem);
         if (data.requireItem && !bypassItem) {
             ItemStack item = player.getInventory().getItemInMainHand();
-            if (!itemMatches(item, data.requiredItemName)) { sendTeleporterMessage(player, teleporterMissingItemMessage, teleporterMissingItemType); return; }
+            if (!itemMatches(item, data.requiredItemName)) { sendTeleporterPrefixed(player, msgMissingItem, msgMissingItemType); return; }
         }
         if (recentInteractions.contains(player.getUniqueId())) return;
         recentInteractions.add(player.getUniqueId());
@@ -1089,9 +810,13 @@ public final class Main extends JavaPlugin implements Listener {
             @Override public void run() { recentInteractions.remove(player.getUniqueId()); }
         }.runTaskLater(this, DOUBLE_CLICK_DELAY_TICKS);
         event.setCancelled(true);
+        if (data.passwordEnabled && !data.password.isEmpty()) {
+            pendingPasswords.put(player.getUniqueId(), new PendingPassword(data.key()));
+            sendTeleporterPrefixed(player, msgPasswordRequired, msgPasswordRequiredType);
+            return;
+        }
         performTeleport(player, data);
     }
-
     @EventHandler(priority = EventPriority.LOWEST)
     public void onProjectileLaunch(ProjectileLaunchEvent event) {
         if (!(event.getEntity() instanceof EnderPearl)) return;
@@ -1103,7 +828,6 @@ public final class Main extends JavaPlugin implements Listener {
             try { if (player.hasMetadata("elevator_cancel_pearl")) player.removeMetadata("elevator_cancel_pearl", Main.this); } catch (Throwable ignored) {}
         }
     }
-
     private boolean itemMatches(ItemStack item, String requiredName) {
         if (item == null || item.getType() == Material.AIR) return false;
         if (requiredName == null || requiredName.isEmpty()) return true;
@@ -1114,7 +838,6 @@ public final class Main extends JavaPlugin implements Listener {
         String required = stripColor(requiredName);
         return display.equalsIgnoreCase(required);
     }
-
     private void tryBindBlock(Player player, Block block, Material blockType) {
         if (!player.isSneaking()) return;
         if (isInDisabledWorld(player)) { debug("Disabled world"); return; }
@@ -1139,13 +862,8 @@ public final class Main extends JavaPlugin implements Listener {
         BlockData data = new BlockData();
         data.owner = player.getUniqueId();
         data.world = block.getWorld().getName();
-        data.x = block.getX();
-        data.y = block.getY();
-        data.z = block.getZ();
+        data.x = block.getX(); data.y = block.getY(); data.z = block.getZ();
         data.clickType = ClickType.RIGHT;
-        data.requireSneak = false;
-        data.requireItem = false;
-        data.requiredItemName = "";
         data.teleportAccess = featureTeleportDefaultAccess;
         data.manageAccess = featureManageDefaultAccess;
         data.breakAccess = featureBreakDefaultAccess;
@@ -1157,28 +875,39 @@ public final class Main extends JavaPlugin implements Listener {
         playerBlocks.computeIfAbsent(player.getUniqueId(), k -> new ArrayList<>()).add(key);
         saveBlocks();
         playEffects(block.getLocation(), activateSound, true);
-        sendTeleporterMessage(player, teleporterBlockBoundMessage, teleporterBlockBoundType);
-        openMainMenu(player, data);
+        sendTeleporterPrefixed(player, msgBlockBound, msgBlockBoundType);
+        openGui(player, data, "main");
     }
-
     private void performTeleport(Player player, BlockData source) {
         int id = source.id;
         if (id <= 0) { debug("No ID"); return; }
-        Set<String> keys = idIndex.get(id);
-        if (keys == null || keys.size() < 2) { sendTeleporterMessage(player, teleporterNoPairMessage, teleporterNoPairType); return; }
         BlockData destination = null;
-        for (String k : keys) if (!k.equals(source.key())) { destination = blockDataMap.get(k); break; }
-        if (destination == null) { sendTeleporterMessage(player, teleporterNoPairMessage, teleporterNoPairType); return; }
+        if (source.redirectEnabled && !source.redirectChain.isEmpty()) {
+            String key = source.key();
+            int idx = redirectIndex.getOrDefault(key, 0);
+            if (idx >= source.redirectChain.size()) idx = 0;
+            int targetId = source.redirectChain.get(idx);
+            Set<String> candidates = idIndex.get(targetId);
+            if (candidates != null && !candidates.isEmpty()) {
+                for (String k : candidates) { destination = blockDataMap.get(k); if (destination != null) break; }
+            }
+            redirectIndex.put(key, idx + 1);
+        } else {
+            Set<String> keys = idIndex.get(id);
+            if (keys == null || keys.size() < 2) { sendTeleporterPrefixed(player, msgNoPair, msgNoPairType); return; }
+            for (String k : keys) if (!k.equals(source.key())) { destination = blockDataMap.get(k); break; }
+        }
+        if (destination == null) { sendTeleporterPrefixed(player, msgNoPair, msgNoPairType); return; }
         World destWorld = Bukkit.getWorld(destination.world);
         if (destWorld == null) { debug("Dest world missing"); return; }
-        if (!allowCrossWorlds && !player.getWorld().getName().equals(destination.world)) { sendTeleporterMessage(player, teleporterNoCrossWorldMessage, teleporterNoCrossWorldType); return; }
+        if (!allowCrossWorlds && !player.getWorld().getName().equals(destination.world)) { sendTeleporterPrefixed(player, msgNoCrossWorld, msgNoCrossWorldType); return; }
         boolean bypassDistance = checkPermission && player.hasPermission(permBypassDistance);
         if (!bypassDistance && distanceCheckEnabled) {
             Location a = new Location(player.getWorld(), source.x, source.y, source.z);
             Location b = new Location(destWorld, destination.x, destination.y, destination.z);
             if (a.getWorld() != null && a.getWorld().equals(b.getWorld())) {
                 double dist = a.distance(b);
-                if (dist > maxDistance) { sendTeleporterMessage(player, teleporterDistanceTooFarMessage, teleporterDistanceTooFarType); return; }
+                if (dist > maxDistance) { sendTeleporterPrefixed(player, msgDistanceTooFar, msgDistanceTooFarType); return; }
             }
         }
         Location destLoc;
@@ -1189,16 +918,15 @@ public final class Main extends JavaPlugin implements Listener {
         } else {
             destLoc = new Location(destWorld, destination.x + 0.5, destination.y + 1, destination.z + 0.5, player.getLocation().getYaw(), player.getLocation().getPitch());
         }
-        if (!isSafeLocation(destLoc, true)) { sendTeleporterMessage(player, elevatorDangerMessage, elevatorDangerType); return; }
+        if (!isSafeLocation(destLoc, true)) { sendTeleporterPrefixed(player, msgElevatorDanger, msgElevatorDangerType); return; }
         Location sourceLoc = player.getLocation().clone();
         playEffects(sourceLoc, teleporterUsageSound, true);
         playEffects(destLoc, teleporterUsageSound, true);
         player.teleport(destLoc);
         playEffects(destLoc, teleporterUsageSound, true);
-        sendTeleporterMessage(player, teleporterSuccessMessage, teleporterSuccessType);
+        sendTeleporterPrefixed(player, msgTeleportSuccess, msgTeleportSuccessType);
         setCooldown(player);
     }
-
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onBlockBreak(BlockBreakEvent event) {
         Player player = event.getPlayer();
@@ -1211,7 +939,6 @@ public final class Main extends JavaPlugin implements Listener {
         if (!canBreak(player, data)) { event.setCancelled(true); debug("No break rights"); return; }
         removeBlock(data);
     }
-
     private void removeBlock(BlockData data) {
         String key = data.key();
         removeHologram(data);
@@ -1220,9 +947,9 @@ public final class Main extends JavaPlugin implements Listener {
         if (keys != null) { keys.remove(key); if (keys.isEmpty()) idIndex.remove(data.id); }
         List<String> list = playerBlocks.get(data.owner);
         if (list != null) { list.remove(key); if (list.isEmpty()) playerBlocks.remove(data.owner); }
+        redirectIndex.remove(key);
         saveBlocks();
     }
-
     private boolean canTeleport(Player player, BlockData data) {
         if (checkPermission && player.hasPermission(permBypassAccess)) return true;
         if (featureTeleportCheckPermission && !hasPermission(player, featureTeleportPermission)) return false;
@@ -1243,7 +970,6 @@ public final class Main extends JavaPlugin implements Listener {
         }
         return false;
     }
-
     private boolean canManage(Player player, BlockData data) {
         if (checkPermission && player.hasPermission(permBypassAccess)) return true;
         if (featureManageCheckPermission && !hasPermission(player, featureManagePermission)) return false;
@@ -1258,7 +984,6 @@ public final class Main extends JavaPlugin implements Listener {
         }
         return false;
     }
-
     private boolean canBreak(Player player, BlockData data) {
         if (checkPermission && player.hasPermission(permBypassAccess)) return true;
         if (featureBreakCheckPermission && !hasPermission(player, featureBreakPermission)) return false;
@@ -1279,96 +1004,189 @@ public final class Main extends JavaPlugin implements Listener {
         }
         return false;
     }
-
-    private void openMainMenu(Player player, BlockData data) {
-        int size = guiMainSize;
+    private void openGui(Player player, BlockData data, String menuName) {
+        ConfigurationSection menu = getConfig().getConfigurationSection("GUI.Menus." + menuName);
+        if (menu == null) { debug("Menu not found: " + menuName); return; }
+        String title = menu.getString("title", "&8Menu");
+        int size = menu.getInt("size", 54);
         if (size % 9 != 0 || size < 9 || size > 54) size = 54;
-        Inventory inv = Bukkit.createInventory(null, size, color(guiMainTitle));
-        if (guiFeatureId) inv.setItem(guiMainSlotId, createItem(Material.ENDER_PEARL,
-            data.id > 0 ? guiMainIdItem.replace("%id%", String.valueOf(data.id)) : guiMainIdItemEmpty,
-            guiMainIdItemLore));
-        if (guiFeatureClick) inv.setItem(guiMainSlotClick, createItem(Material.LEVER, guiMainClickItem.replace("%value%", data.clickType.name()), guiMainClickItemLore));
-        if (guiFeatureSneak) inv.setItem(guiMainSlotSneak, createItem(Material.SHIELD, guiMainSneakItem.replace("%value%", data.requireSneak ? "Yes" : "No"), guiMainSneakItemLore));
-        if (guiFeatureRequiredItem) inv.setItem(guiMainSlotRequiredItem, createItem(Material.NAME_TAG, guiMainRequiredItem.replace("%value%", data.requireItem ? "Yes" : "No"), data.requiredItemName.isEmpty() ? guiMainRequiredItemLoreEmpty : guiMainRequiredItemLore.replace("%name%", data.requiredItemName), guiMainRequiredItemLoreClick));
-        if (guiFeatureLocation) inv.setItem(guiMainSlotLocation, createItem(Material.ENDER_EYE, guiMainLocationItem.replace("%value%", data.teleportLocation.name()), guiMainLocationItemLore, guiMainLocationItemLoreClick));
-        if (guiFeatureName) inv.setItem(guiMainSlotName, createItem(Material.BOOK, data.customName.isEmpty() ? guiMainNameItemEmpty : guiMainNameItem.replace("%value%", data.customName), guiMainNameItemLore));
-        if (guiFeatureHologram) inv.setItem(guiMainSlotHologram, createItem(Material.ARMOR_STAND, guiMainHologramItem.replace("%value%", data.hologramEnabled ? "Yes" : "No"), guiMainHologramItemLore));
-        if (guiFeatureTeleportAccess) inv.setItem(guiMainSlotTeleportAccess, createItem(Material.PLAYER_HEAD, guiMainTeleportAccessItem.replace("%value%", data.teleportAccess.name()), guiMainTeleportAccessItemLore, guiMainTeleportAccessItemLore2));
-        if (guiFeatureManageAccess) inv.setItem(guiMainSlotManageAccess, createItem(Material.COMMAND_BLOCK, guiMainManageAccessItem.replace("%value%", data.manageAccess.name()), guiMainManageAccessItemLore, guiMainManageAccessItemLore2));
-        if (guiFeatureBreakAccess) inv.setItem(guiMainSlotBreakAccess, createItem(Material.DIAMOND_PICKAXE, guiMainBreakAccessItem.replace("%value%", data.breakAccess.name()), guiMainBreakAccessItemLore, guiMainBreakAccessItemLore2));
-        if (guiFeatureMembers) inv.setItem(guiMainSlotMembers, createItem(Material.CHEST, guiMainMembersItem, guiMainMembersItemLore));
-        inv.setItem(guiMainSlotClose, createItem(Material.BARRIER, guiMainCloseItem));
+        Inventory inv = Bukkit.createInventory(null, size, color(replacePlaceholders(title, player, data, null, null, 0, 0)));
+        ConfigurationSection items = menu.getConfigurationSection("items");
+        if (items != null) {
+            for (String itemKey : items.getKeys(false)) {
+                ConfigurationSection itemSec = items.getConfigurationSection(itemKey);
+                if (itemSec == null) continue;
+                if (!checkViewRequirement(player, itemSec)) continue;
+                String materialName = itemSec.getString("material", "STONE");
+                Material mat;
+                try { mat = Material.valueOf(materialName.toUpperCase(Locale.ROOT)); }
+                catch (IllegalArgumentException e) { mat = Material.STONE; }
+                int slot = itemSec.getInt("slot", -1);
+                if (slot < 0 || slot >= size) continue;
+                String display = replacePlaceholders(itemSec.getString("display_name", ""), player, data, null, null, 0, 0);
+                List<String> loreList = itemSec.getStringList("lore");
+                List<String> loreOut = new ArrayList<>();
+                for (String l : loreList) loreOut.add(replacePlaceholders(l, player, data, null, null, 0, 0));
+                ItemStack stack = createItem(mat, display, loreOut);
+                inv.setItem(slot, stack);
+                GuiItemMeta meta = new GuiItemMeta();
+                meta.itemKey = itemKey;
+                meta.menuName = menuName;
+                meta.leftCommands = itemSec.getStringList("left_click_commands");
+                meta.rightCommands = itemSec.getStringList("right_click_commands");
+                meta.shiftLeftCommands = itemSec.getStringList("shift_left_click_commands");
+                meta.shiftRightCommands = itemSec.getStringList("shift_right_click_commands");
+                guiItemMetaMap.computeIfAbsent(player.getUniqueId(), k -> new HashMap<>()).put(slot, meta);
+            }
+        }
+        ConfigurationSection dyn = menu.getConfigurationSection("dynamic");
+        if (dyn != null) {
+            String listType = null;
+            if (menuName.equals("list")) listType = guiContexts.containsKey(player.getUniqueId()) ? guiContexts.get(player.getUniqueId()).listType : null;
+            if (listType != null) {
+                Set<UUID> list = getListByType(data, listType);
+                ConfigurationSection entry = dyn.getConfigurationSection("player_entry");
+                if (entry != null) {
+                    String materialName = entry.getString("material", "PLAYER_HEAD");
+                    Material mat;
+                    try { mat = Material.valueOf(materialName.toUpperCase(Locale.ROOT)); }
+                    catch (IllegalArgumentException e) { mat = Material.PLAYER_HEAD; }
+                    int startSlot = dyn.getInt("slots.start", 0);
+                    int endSlot = dyn.getInt("slots.end", size - 10);
+                    List<UUID> sorted = new ArrayList<>(list);
+                    int idx = 0;
+                    for (int s = startSlot; s <= endSlot && s < size && idx < sorted.size(); s++) {
+                        UUID target = sorted.get(idx);
+                        String name = Bukkit.getOfflinePlayer(target).getName();
+                        if (name == null) name = target.toString();
+                        String dn = entry.getString("display_name", "");
+                        dn = dn.replace("%name%", name).replace("%uuid%", target.toString());
+                        List<String> loreList = entry.getStringList("lore");
+                        List<String> loreOut = new ArrayList<>();
+                        for (String l : loreList) loreOut.add(replacePlaceholders(l, player, data, null, null, 0, 0));
+                        inv.setItem(s, createItem(mat, dn, loreOut));
+                        GuiItemMeta meta = new GuiItemMeta();
+                        meta.itemKey = "player_entry";
+                        meta.menuName = menuName;
+                        meta.leftCommands = new ArrayList<>();
+                        for (String cmd : entry.getStringList("left_click_commands")) meta.leftCommands.add(cmd.replace("%uuid%", target.toString()).replace("%name%", name));
+                        meta.rightCommands = new ArrayList<>();
+                        guiItemMetaMap.computeIfAbsent(player.getUniqueId(), k -> new HashMap<>()).put(s, meta);
+                        idx++;
+                    }
+                }
+            } else if (menuName.equals("redirect")) {
+                ConfigurationSection entry = dyn.getConfigurationSection("step_entry");
+                if (entry != null) {
+                    String materialName = entry.getString("material", "PAPER");
+                    Material mat;
+                    try { mat = Material.valueOf(materialName.toUpperCase(Locale.ROOT)); }
+                    catch (IllegalArgumentException e) { mat = Material.PAPER; }
+                    int startSlot = dyn.getInt("slots.start", 9);
+                    int endSlot = dyn.getInt("slots.end", 44);
+                    int idx = 0;
+                    for (int id : data.redirectChain) {
+                        int s = startSlot + idx;
+                        if (s > endSlot || s >= size) break;
+                        String dn = entry.getString("display_name", "").replace("%index%", String.valueOf(idx + 1)).replace("%id%", String.valueOf(id));
+                        List<String> loreList = entry.getStringList("lore");
+                        List<String> loreOut = new ArrayList<>();
+                        for (String l : loreList) loreOut.add(replacePlaceholders(l, player, data, null, null, 0, 0));
+                        inv.setItem(s, createItem(mat, dn, loreOut));
+                        GuiItemMeta meta = new GuiItemMeta();
+                        meta.itemKey = "step_entry";
+                        meta.menuName = menuName;
+                        meta.leftCommands = new ArrayList<>();
+                        for (String cmd : entry.getStringList("left_click_commands")) meta.leftCommands.add(cmd.replace("%index%", String.valueOf(idx)));
+                        meta.rightCommands = new ArrayList<>();
+                        guiItemMetaMap.computeIfAbsent(player.getUniqueId(), k -> new HashMap<>()).put(s, meta);
+                        idx++;
+                    }
+                }
+            }
+        }
         player.openInventory(inv);
         openGuis.put(player.getUniqueId(), inv);
-        guiContexts.put(player.getUniqueId(), new GuiContext(data.key(), "MAIN"));
-    }
-
-    private void openMembersMenu(Player player, BlockData data) {
-        int size = guiMembersSize;
-        if (size % 9 != 0 || size < 9 || size > 54) size = 54;
-        Inventory inv = Bukkit.createInventory(null, size, color(guiMembersTitle));
-        if (guiFeatureMembersLocal) {
-            inv.setItem(guiMembersSlotLocalMembers, createItem(Material.PLAYER_HEAD, guiMembersLocalMembers.replace("%count%", String.valueOf(data.members.size())), guiMembersClickManage));
-            inv.setItem(guiMembersSlotLocalGovernings, createItem(Material.PLAYER_HEAD, guiMembersLocalGovernings.replace("%count%", String.valueOf(data.governings.size())), guiMembersClickManage));
+        GuiContext ctx = new GuiContext(data.key(), menuName);
+        if (guiContexts.containsKey(player.getUniqueId())) {
+            GuiContext old = guiContexts.get(player.getUniqueId());
+            ctx.listType = old.listType;
+            ctx.page = old.page;
         }
-        if (guiFeatureMembersGlobal) {
-            inv.setItem(guiMembersSlotGlobalMembers, createItem(Material.PLAYER_HEAD, guiMembersGlobalMembers.replace("%count%", String.valueOf(getGlobalMembers(data.owner).size())), guiMembersClickManage));
-            inv.setItem(guiMembersSlotGlobalGovernings, createItem(Material.PLAYER_HEAD, guiMembersGlobalGovernings.replace("%count%", String.valueOf(getGlobalGovernings(data.owner).size())), guiMembersClickManage));
-        }
-        inv.setItem(guiMembersSlotBack, createItem(Material.ARROW, guiMembersBack));
-        player.openInventory(inv);
-        openGuis.put(player.getUniqueId(), inv);
-        guiContexts.put(player.getUniqueId(), new GuiContext(data.key(), "MEMBERS"));
-    }
-
-    private void openPlayerListView(Player player, BlockData data, String listType, int page) {
-        Set<UUID> list;
-        String title;
-        switch (listType) {
-            case "LOCAL_MEMBERS": list = data.members; title = "Local Members"; break;
-            case "LOCAL_GOVERNINGS": list = data.governings; title = "Local Governings"; break;
-            case "GLOBAL_MEMBERS": list = getGlobalMembers(data.owner); title = "Global Members"; break;
-            case "GLOBAL_GOVERNINGS": list = getGlobalGovernings(data.owner); title = "Global Governings"; break;
-            default: return;
-        }
-        List<UUID> sorted = new ArrayList<>(list);
-        int size = guiListSize;
-        if (size % 9 != 0 || size < 9 || size > 54) size = 54;
-        int perPage = size - 9;
-        int totalPages = Math.max(1, (int) Math.ceil(sorted.size() / (double) perPage));
-        if (page < 0) page = 0;
-        if (page >= totalPages) page = totalPages - 1;
-        String t = guiListTitle.replace("%list%", title + " (" + (page + 1) + "/" + totalPages + ")");
-        Inventory inv = Bukkit.createInventory(null, size, color(t));
-        int start = page * perPage;
-        int end = Math.min(start + perPage, sorted.size());
-        for (int i = start; i < end; i++) {
-            UUID uuid = sorted.get(i);
-            String name = Bukkit.getOfflinePlayer(uuid).getName();
-            if (name == null) name = uuid.toString();
-            inv.setItem(i - start, createItem(Material.PLAYER_HEAD, guiListPlayerItem.replace("%name%", name), guiListPlayerItemLore));
-        }
-        int base = size - 9;
-        inv.setItem(base, createItem(Material.ARROW, guiListPrevious));
-        inv.setItem(base + 3, createItem(Material.EMERALD, guiListAddPlayer));
-        inv.setItem(base + 4, createItem(Material.ARROW, guiListBack));
-        inv.setItem(base + 8, createItem(Material.ARROW, guiListNext));
-        player.openInventory(inv);
-        openGuis.put(player.getUniqueId(), inv);
-        GuiContext ctx = new GuiContext(data.key(), "LIST_" + listType);
-        ctx.page = page;
         guiContexts.put(player.getUniqueId(), ctx);
     }
-
-    private Set<UUID> getGlobalMembers(UUID owner) { return globalMembers.computeIfAbsent(owner, k -> ConcurrentHashMap.newKeySet()); }
-    private Set<UUID> getGlobalGovernings(UUID owner) { return globalGovernings.computeIfAbsent(owner, k -> ConcurrentHashMap.newKeySet()); }
-
-    private ItemStack createItem(Material mat, String name, String... lore) {
+    private final Map<UUID, Map<Integer, GuiItemMeta>> guiItemMetaMap = new HashMap<>();
+    public static class GuiItemMeta {
+        public String itemKey;
+        public String menuName;
+        public List<String> leftCommands = new ArrayList<>();
+        public List<String> rightCommands = new ArrayList<>();
+        public List<String> shiftLeftCommands = new ArrayList<>();
+        public List<String> shiftRightCommands = new ArrayList<>();
+    }
+    private boolean checkViewRequirement(Player player, ConfigurationSection itemSec) {
+        ConfigurationSection vr = itemSec.getConfigurationSection("view_requirement");
+        if (vr == null) return true;
+        String type = vr.getString("type", "");
+        if (type.equalsIgnoreCase("holding_item")) {
+            String matName = vr.getString("material", "");
+            Material mat;
+            try { mat = Material.valueOf(matName.toUpperCase(Locale.ROOT)); }
+            catch (IllegalArgumentException e) { return true; }
+            ItemStack hand = player.getInventory().getItemInMainHand();
+            return hand != null && hand.getType() == mat;
+        }
+        if (type.equalsIgnoreCase("permission")) {
+            String perm = vr.getString("permission", "");
+            if (perm.isEmpty()) return true;
+            return player.hasPermission(perm);
+        }
+        return true;
+    }
+    private String replacePlaceholders(String text, Player player, BlockData data, String listType, String extraName, int index, int page) {
+        if (text == null) return "";
+        String out = text;
+        if (data != null) {
+            out = out.replace("%id%", String.valueOf(data.id));
+            out = out.replace("%name%", data.customName.isEmpty() ? "" : data.customName);
+            out = out.replace("%click%", data.clickType.name());
+            out = out.replace("%sneak%", data.requireSneak ? "Yes" : "No");
+            out = out.replace("%item%", data.requireItem ? "Yes" : "No");
+            out = out.replace("%value%", data.requiredItemName.isEmpty() ? "-" : data.requiredItemName);
+            out = out.replace("%location%", data.teleportLocation.name());
+            out = out.replace("%teleport_access%", data.teleportAccess.name());
+            out = out.replace("%manage_access%", data.manageAccess.name());
+            out = out.replace("%break_access%", data.breakAccess.name());
+            out = out.replace("%password%", data.passwordEnabled ? "Yes" : "No");
+            out = out.replace("%redirect%", data.redirectEnabled ? "Yes" : "No");
+            out = out.replace("%members%", String.valueOf(data.members.size()));
+            out = out.replace("%governings%", String.valueOf(data.governings.size()));
+            out = out.replace("%count%", String.valueOf(data.members.size()));
+            out = out.replace("%list%", "List");
+            out = out.replace("%index%", String.valueOf(index + 1));
+            out = out.replace("%page%", String.valueOf(page + 1));
+            out = out.replace("%pages%", "1");
+            out = out.replace("%hologram%", data.hologramEnabled ? "Yes" : "No");
+        }
+        out = out.replace("%player%", player.getName());
+        if (extraName != null) out = out.replace("%name%", extraName);
+        return out;
+    }
+    private Set<UUID> getListByType(BlockData data, String listType) {
+        switch (listType) {
+            case "LOCAL_MEMBERS": return data.members;
+            case "LOCAL_GOVERNINGS": return data.governings;
+            case "GLOBAL_MEMBERS": return globalMembers.computeIfAbsent(data.owner, k -> ConcurrentHashMap.newKeySet());
+            case "GLOBAL_GOVERNINGS": return globalGovernings.computeIfAbsent(data.owner, k -> ConcurrentHashMap.newKeySet());
+        }
+        return new HashSet<>();
+    }
+    private ItemStack createItem(Material mat, String name, List<String> lore) {
         ItemStack item = new ItemStack(mat);
         ItemMeta meta = item.getItemMeta();
         if (meta != null) {
             meta.setDisplayName(color(name));
-            if (lore.length > 0) {
+            if (lore != null && !lore.isEmpty()) {
                 List<String> loreList = new ArrayList<>();
                 for (String l : lore) loreList.add(color(l));
                 meta.setLore(loreList);
@@ -1377,163 +1195,242 @@ public final class Main extends JavaPlugin implements Listener {
         }
         return item;
     }
-
     @EventHandler
     public void onInventoryClick(InventoryClickEvent event) {
         if (!(event.getWhoClicked() instanceof Player)) return;
         Player player = (Player) event.getWhoClicked();
+        if (openGuis.get(player.getUniqueId()) != event.getInventory()) return;
+        event.setCancelled(true);
         GuiContext ctx = guiContexts.get(player.getUniqueId());
         if (ctx == null) return;
-        if (event.getInventory() != openGuis.get(player.getUniqueId())) return;
-        event.setCancelled(true);
         BlockData data = blockDataMap.get(ctx.blockKey);
         if (data == null) { player.closeInventory(); return; }
         int slot = event.getRawSlot();
-        String guiType = ctx.guiType;
-        if (guiType.equals("MAIN")) {
-            if (guiFeatureId && slot == guiMainSlotId) { player.closeInventory(); player.sendMessage(color(msgIdPrompt)); chatSessions.put(player.getUniqueId(), new ChatInputSession("SET_ID", data.key())); return; }
-            if (guiFeatureClick && slot == guiMainSlotClick) { data.clickType = data.clickType == ClickType.LEFT ? ClickType.RIGHT : ClickType.LEFT; saveBlocks(); openMainMenu(player, data); return; }
-            if (guiFeatureSneak && slot == guiMainSlotSneak) { data.requireSneak = !data.requireSneak; saveBlocks(); openMainMenu(player, data); return; }
-            if (guiFeatureRequiredItem && slot == guiMainSlotRequiredItem) { player.closeInventory(); player.sendMessage(color(msgItemPrompt)); chatSessions.put(player.getUniqueId(), new ChatInputSession("SET_ITEM", data.key())); return; }
-            if (guiFeatureLocation && slot == guiMainSlotLocation) {
-                data.teleportLocation = data.teleportLocation == TeleportLocation.TOP ? TeleportLocation.CURRENT : TeleportLocation.TOP;
-                if (data.teleportLocation == TeleportLocation.CURRENT) {
-                    Location loc = player.getLocation();
-                    Block block = player.getWorld().getBlockAt(data.x, data.y, data.z);
-                    if (loc.distance(block.getLocation()) <= 5.0) {
-                        data.customDestinationWorld = loc.getWorld().getName();
-                        data.customDestinationX = loc.getX(); data.customDestinationY = loc.getY(); data.customDestinationZ = loc.getZ();
-                        data.customDestinationYaw = loc.getYaw(); data.customDestinationPitch = loc.getPitch();
-                    } else data.customDestinationWorld = "";
-                }
-                saveBlocks(); openMainMenu(player, data); return;
-            }
-            if (guiFeatureName && slot == guiMainSlotName) { player.closeInventory(); player.sendMessage(color(msgNamePrompt)); chatSessions.put(player.getUniqueId(), new ChatInputSession("SET_NAME", data.key())); return; }
-            if (guiFeatureHologram && slot == guiMainSlotHologram) { data.hologramEnabled = !data.hologramEnabled; if (data.hologramEnabled) updateHologram(data); else removeHologram(data); saveBlocks(); openMainMenu(player, data); return; }
-            if (guiFeatureTeleportAccess && slot == guiMainSlotTeleportAccess) { data.teleportAccess = cycleTeleportAccess(data.teleportAccess); saveBlocks(); openMainMenu(player, data); return; }
-            if (guiFeatureManageAccess && slot == guiMainSlotManageAccess) { data.manageAccess = cycleManageAccess(data.manageAccess); saveBlocks(); openMainMenu(player, data); return; }
-            if (guiFeatureBreakAccess && slot == guiMainSlotBreakAccess) { data.breakAccess = cycleBreakAccess(data.breakAccess); saveBlocks(); openMainMenu(player, data); return; }
-            if (guiFeatureMembers && slot == guiMainSlotMembers) { openMembersMenu(player, data); return; }
-            if (slot == guiMainSlotClose) { player.closeInventory(); return; }
+        Map<Integer, GuiItemMeta> slotMap = guiItemMetaMap.get(player.getUniqueId());
+        if (slotMap == null) return;
+        GuiItemMeta meta = slotMap.get(slot);
+        if (meta == null) return;
+        List<String> commands;
+        if (event.isShiftClick() && event.isLeftClick()) commands = meta.shiftLeftCommands;
+        else if (event.isShiftClick() && event.isRightClick()) commands = meta.shiftRightCommands;
+        else if (event.isLeftClick()) commands = meta.leftCommands;
+        else if (event.isRightClick()) commands = meta.rightCommands;
+        else commands = new ArrayList<>();
+        for (String cmd : commands) handleGuiCommand(player, data, cmd, meta, slot);
+    }
+    private void handleGuiCommand(Player player, BlockData data, String cmd, GuiItemMeta meta, int slot) {
+        if (cmd == null || cmd.isEmpty()) return;
+        if (cmd.equals("[close]")) { player.closeInventory(); return; }
+        if (cmd.startsWith("[opengui] ")) {
+            String menuName = cmd.substring(9).trim();
+            openGui(player, data, menuName);
             return;
         }
-        if (guiType.equals("MEMBERS")) {
-            if (guiFeatureMembersLocal && slot == guiMembersSlotLocalMembers) { openPlayerListView(player, data, "LOCAL_MEMBERS", 0); return; }
-            if (guiFeatureMembersLocal && slot == guiMembersSlotLocalGovernings) { openPlayerListView(player, data, "LOCAL_GOVERNINGS", 0); return; }
-            if (guiFeatureMembersGlobal && slot == guiMembersSlotGlobalMembers) { openPlayerListView(player, data, "GLOBAL_MEMBERS", 0); return; }
-            if (guiFeatureMembersGlobal && slot == guiMembersSlotGlobalGovernings) { openPlayerListView(player, data, "GLOBAL_GOVERNINGS", 0); return; }
-            if (slot == guiMembersSlotBack) { openMainMenu(player, data); return; }
+        if (cmd.startsWith("[opengui_list] ")) {
+            String listType = cmd.substring(14).trim();
+            GuiContext ctx = guiContexts.get(player.getUniqueId());
+            if (ctx != null) ctx.listType = listType;
+            openGui(player, data, "list");
             return;
         }
-        if (guiType.startsWith("LIST_")) {
-            String listType = guiType.substring(5);
-            Set<UUID> list;
-            switch (listType) {
-                case "LOCAL_MEMBERS": list = data.members; break;
-                case "LOCAL_GOVERNINGS": list = data.governings; break;
-                case "GLOBAL_MEMBERS": list = getGlobalMembers(data.owner); break;
-                case "GLOBAL_GOVERNINGS": list = getGlobalGovernings(data.owner); break;
-                default: return;
+        if (cmd.startsWith("[elevator_page] ")) {
+            String dir = cmd.substring(15).trim();
+            GuiContext ctx = guiContexts.get(player.getUniqueId());
+            if (ctx != null) {
+                if (dir.equals("next")) ctx.page++;
+                else if (dir.equals("previous")) ctx.page = Math.max(0, ctx.page - 1);
             }
-            List<UUID> sorted = new ArrayList<>(list);
-            int size = guiListSize;
-            if (size % 9 != 0 || size < 9 || size > 54) size = 54;
-            int perPage = size - 9;
-            int base = size - 9;
-            if (slot == base) { openPlayerListView(player, data, listType, ctx.page - 1); return; }
-            if (slot == base + 8) { openPlayerListView(player, data, listType, ctx.page + 1); return; }
-            if (slot == base + 4) { openMembersMenu(player, data); return; }
-            if (slot == base + 3) { player.closeInventory(); player.sendMessage(color(msgListPrompt)); chatSessions.put(player.getUniqueId(), new ChatInputSession("ADD_" + listType, data.key())); return; }
-            int index = ctx.page * perPage + slot;
-            if (slot >= 0 && slot < perPage && index < sorted.size()) { list.remove(sorted.get(index)); saveBlocks(); openPlayerListView(player, data, listType, ctx.page); }
+            openGui(player, data, "list");
+            return;
+        }
+        if (cmd.startsWith("[elevator_input] ")) {
+            String inputType = cmd.substring(17).trim();
+            GuiContext ctx = guiContexts.get(player.getUniqueId());
+            String listType = ctx != null ? ctx.listType : null;
+            player.closeInventory();
+            if (inputType.equals("SET_ID")) { sendPrefixed(player, msgIdPrompt, msgIdPromptType); chatSessions.put(player.getUniqueId(), new ChatInputSession("SET_ID", data.key())); }
+            else if (inputType.equals("SET_ITEM")) { sendPrefixed(player, msgItemPrompt, msgItemPromptType); chatSessions.put(player.getUniqueId(), new ChatInputSession("SET_ITEM", data.key())); }
+            else if (inputType.equals("SET_NAME")) { sendPrefixed(player, msgNamePrompt, msgNamePromptType); chatSessions.put(player.getUniqueId(), new ChatInputSession("SET_NAME", data.key())); }
+            else if (inputType.equals("SET_PASSWORD")) { sendPrefixed(player, msgPasswordPrompt, msgPasswordPromptType); chatSessions.put(player.getUniqueId(), new ChatInputSession("SET_PASSWORD", data.key())); }
+            else if (inputType.equals("ADD_STEP")) { sendPrefixed(player, msgRedirectPrompt, msgRedirectPromptType); chatSessions.put(player.getUniqueId(), new ChatInputSession("ADD_STEP", data.key())); }
+            else if (inputType.equals("CLEAR_STEPS")) { data.redirectChain.clear(); saveBlocks(); openGui(player, data, "redirect"); }
+            else if (inputType.equals("ADD_PLAYER")) { sendPrefixed(player, msgListPrompt, msgListPromptType); chatSessions.put(player.getUniqueId(), new ChatInputSession("ADD_PLAYER", data.key(), listType)); }
+            return;
+        }
+        if (cmd.startsWith("[elevator_toggle] ")) {
+            String toggle = cmd.substring(18).trim();
+            switch (toggle) {
+                case "click": data.clickType = data.clickType == ClickType.LEFT ? ClickType.RIGHT : ClickType.LEFT; break;
+                case "sneak": data.requireSneak = !data.requireSneak; break;
+                case "location":
+                    data.teleportLocation = data.teleportLocation == TeleportLocation.TOP ? TeleportLocation.CURRENT : TeleportLocation.TOP;
+                    if (data.teleportLocation == TeleportLocation.CURRENT) {
+                        Location loc = player.getLocation();
+                        Block block = player.getWorld().getBlockAt(data.x, data.y, data.z);
+                        if (loc.distance(block.getLocation()) <= 5.0) {
+                            data.customDestinationWorld = loc.getWorld().getName();
+                            data.customDestinationX = loc.getX(); data.customDestinationY = loc.getY(); data.customDestinationZ = loc.getZ();
+                            data.customDestinationYaw = loc.getYaw(); data.customDestinationPitch = loc.getPitch();
+                        } else data.customDestinationWorld = "";
+                    }
+                    break;
+                case "hologram":
+                    data.hologramEnabled = !data.hologramEnabled;
+                    if (data.hologramEnabled) updateHologram(data); else removeHologram(data);
+                    break;
+                case "teleport_access": data.teleportAccess = cycleTeleportAccess(data.teleportAccess); break;
+                case "manage_access": data.manageAccess = cycleManageAccess(data.manageAccess); break;
+                case "break_access": data.breakAccess = cycleBreakAccess(data.breakAccess); break;
+                case "redirect": data.redirectEnabled = !data.redirectEnabled; break;
+            }
+            saveBlocks();
+            openGui(player, data, meta.menuName);
+            return;
+        }
+        if (cmd.startsWith("[elevator_list_remove] ")) {
+            String uuidStr = cmd.substring(23).trim();
+            UUID target;
+            try { target = UUID.fromString(uuidStr); } catch (IllegalArgumentException e) { return; }
+            GuiContext ctx = guiContexts.get(player.getUniqueId());
+            if (ctx != null) {
+                Set<UUID> list = getListByType(data, ctx.listType);
+                list.remove(target);
+                saveBlocks();
+            }
+            openGui(player, data, "list");
+            return;
+        }
+        if (cmd.startsWith("[elevator_redirect_remove] ")) {
+            int idx;
+            try { idx = Integer.parseInt(cmd.substring(27).trim()); } catch (NumberFormatException e) { return; }
+            if (idx >= 0 && idx < data.redirectChain.size()) {
+                int removed = data.redirectChain.remove(idx);
+                saveBlocks();
+                player.sendMessage(color(prefix + msgRedirectRemoved.replace("%id%", String.valueOf(removed))));
+            }
+            openGui(player, data, "redirect");
+            return;
         }
     }
-
     private AccessLevel cycleTeleportAccess(AccessLevel c) { AccessLevel[] v = {AccessLevel.OWNER, AccessLevel.MEMBERS, AccessLevel.GOVERNINGS, AccessLevel.ALL}; return v[(Arrays.asList(v).indexOf(c) + 1) % v.length]; }
     private AccessLevel cycleManageAccess(AccessLevel c) { AccessLevel[] v = {AccessLevel.OWNER, AccessLevel.GOVERNINGS, AccessLevel.ALL}; return v[(Arrays.asList(v).indexOf(c) + 1) % v.length]; }
     private AccessLevel cycleBreakAccess(AccessLevel c) { AccessLevel[] v = {AccessLevel.OWNER, AccessLevel.MEMBERS, AccessLevel.GOVERNINGS, AccessLevel.ALL}; return v[(Arrays.asList(v).indexOf(c) + 1) % v.length]; }
-
     @EventHandler
     public void onInventoryClose(InventoryCloseEvent event) {
         if (!(event.getPlayer() instanceof Player)) return;
         Player player = (Player) event.getPlayer();
         UUID uuid = player.getUniqueId();
-        if (openGuis.get(uuid) == event.getInventory()) { openGuis.remove(uuid); guiContexts.remove(uuid); }
+        if (openGuis.get(uuid) == event.getInventory()) {
+            openGuis.remove(uuid);
+            guiContexts.remove(uuid);
+            guiItemMetaMap.remove(uuid);
+        }
     }
-
     @EventHandler
     public void onChat(AsyncPlayerChatEvent event) {
         Player player = event.getPlayer();
+        PendingPassword pending = pendingPasswords.get(player.getUniqueId());
+        if (pending != null) {
+            if (System.currentTimeMillis() > pending.expireTime) { pendingPasswords.remove(player.getUniqueId()); return; }
+            event.setCancelled(true);
+            String message = event.getMessage().trim();
+            pendingPasswords.remove(player.getUniqueId());
+            if (message.equalsIgnoreCase("cancel")) { player.sendMessage(color(prefix + msgCancelled)); return; }
+            BlockData data = blockDataMap.get(pending.blockKey);
+            if (data == null) { player.sendMessage(color(prefix + msgBlockGone)); return; }
+            new BukkitRunnable() {
+                @Override public void run() {
+                    if (!data.passwordEnabled) { performTeleport(player, data); return; }
+                    if (data.password.equalsIgnoreCase(message)) {
+                        sendTeleporterPrefixed(player, msgPasswordOk, msgPasswordOkType);
+                        performTeleport(player, data);
+                    } else {
+                        sendTeleporterPrefixed(player, msgPasswordWrong, msgPasswordWrongType);
+                    }
+                }
+            }.runTask(this);
+            return;
+        }
         ChatInputSession session = chatSessions.get(player.getUniqueId());
         if (session == null) return;
         if (System.currentTimeMillis() > session.expireTime) { chatSessions.remove(player.getUniqueId()); return; }
         event.setCancelled(true);
         String message = event.getMessage().trim();
         chatSessions.remove(player.getUniqueId());
-        if (message.equalsIgnoreCase("cancel")) { player.sendMessage(color(msgCancelled)); return; }
+        if (message.equalsIgnoreCase("cancel")) { player.sendMessage(color(prefix + msgCancelled)); return; }
         BlockData data = blockDataMap.get(session.blockKey);
-        if (data == null) { player.sendMessage(color(msgBlockGone)); return; }
+        if (data == null) { player.sendMessage(color(prefix + msgBlockGone)); return; }
         new BukkitRunnable() {
             @Override public void run() { handleChatInput(player, data, session, message); }
         }.runTask(this);
     }
-
     private void handleChatInput(Player player, BlockData data, ChatInputSession session, String message) {
         switch (session.type) {
             case "SET_ID": {
                 int newId;
-                try { newId = Integer.parseInt(message); } catch (NumberFormatException e) { player.sendMessage(color(msgIdInvalid)); return; }
-                if (newId <= 0 || newId > 99999) { player.sendMessage(color(msgIdRange)); return; }
+                try { newId = Integer.parseInt(message); } catch (NumberFormatException e) { sendPrefixed(player, msgIdInvalid, msgIdInvalidType); return; }
+                if (newId <= 0 || newId > 99999) { sendPrefixed(player, msgIdRange, msgIdRangeType); return; }
                 Set<String> existing = idIndex.get(newId);
                 if (existing != null) {
                     existing.remove(data.key());
-                    if (existing.size() >= 2) { existing.add(data.key()); player.sendMessage(color(msgIdUsed)); return; }
+                    if (existing.size() >= 2) { existing.add(data.key()); sendPrefixed(player, msgIdUsed, msgIdUsedType); return; }
                 }
                 Set<String> oldKeys = idIndex.get(data.id);
                 if (oldKeys != null) { oldKeys.remove(data.key()); if (oldKeys.isEmpty()) idIndex.remove(data.id); }
                 data.id = newId;
                 idIndex.computeIfAbsent(newId, k -> ConcurrentHashMap.newKeySet()).add(data.key());
                 saveBlocks();
-                player.sendMessage(color(msgIdSet.replace("%id%", String.valueOf(newId))));
-                openMainMenu(player, data);
+                sendPrefixed(player, msgIdSet.replace("%id%", String.valueOf(newId)), msgIdSetType);
+                openGui(player, data, "main");
                 return;
             }
             case "SET_ITEM": {
                 if (message.equalsIgnoreCase("no") || message.equalsIgnoreCase("not")) {
                     data.requireItem = false; data.requiredItemName = ""; saveBlocks();
-                    player.sendMessage(color(msgItemDisabled)); openMainMenu(player, data); return;
+                    sendPrefixed(player, msgItemDisabled, msgItemDisabledType); openGui(player, data, "main"); return;
                 }
                 data.requireItem = true; data.requiredItemName = message; saveBlocks();
-                player.sendMessage(color(msgItemSet.replace("%name%", message))); openMainMenu(player, data); return;
+                sendPrefixed(player, msgItemSet.replace("%name%", message), msgItemSetType); openGui(player, data, "main"); return;
             }
             case "SET_NAME": {
-                if (!blockNamingEnabled) { player.sendMessage(color(msgCancelled)); return; }
+                if (!blockNamingEnabled) { sendPrefixed(player, msgCancelled, msgCancelledType); return; }
                 String name = message.length() > blockNamingMaxLength ? message.substring(0, blockNamingMaxLength) : message;
+                if (!name.startsWith("&") && !name.startsWith("&#") && !name.startsWith("<#") && !name.startsWith("§")) name = blockNamingDefaultColor + name;
                 data.customName = name; saveBlocks();
                 if (data.hologramEnabled) updateHologram(data);
-                player.sendMessage(color(msgNameSet.replace("%name%", color(name)))); openMainMenu(player, data); return;
+                sendPrefixed(player, msgNameSet.replace("%name%", color(name)), msgNameSetType); openGui(player, data, "main"); return;
             }
-            default: {
-                if (session.type.startsWith("ADD_")) {
-                    String listType = session.type.substring(4);
-                    Player target = Bukkit.getPlayerExact(message);
-                    if (target == null) { player.sendMessage(color(msgPlayerNotFound)); return; }
-                    Set<UUID> list;
-                    switch (listType) {
-                        case "LOCAL_MEMBERS": list = data.members; break;
-                        case "LOCAL_GOVERNINGS": list = data.governings; break;
-                        case "GLOBAL_MEMBERS": list = getGlobalMembers(data.owner); break;
-                        case "GLOBAL_GOVERNINGS": list = getGlobalGovernings(data.owner); break;
-                        default: return;
-                    }
-                    list.add(target.getUniqueId()); saveBlocks();
-                    player.sendMessage(color(msgPlayerAdded.replace("%name%", target.getName())));
-                    openPlayerListView(player, data, listType, 0);
+            case "SET_PASSWORD": {
+                if (message.equalsIgnoreCase("no") || message.equalsIgnoreCase("not") || message.equalsIgnoreCase("off")) {
+                    data.passwordEnabled = false; data.password = ""; saveBlocks();
+                    sendPrefixed(player, msgPasswordDisabled, msgPasswordDisabledType); openGui(player, data, "main"); return;
                 }
+                data.passwordEnabled = true; data.password = message; saveBlocks();
+                sendPrefixed(player, msgPasswordSet, msgPasswordSetType); openGui(player, data, "main"); return;
             }
+            case "ADD_STEP": {
+                int newId;
+                try { newId = Integer.parseInt(message); } catch (NumberFormatException e) { sendPrefixed(player, msgIdInvalid, msgIdInvalidType); return; }
+                if (newId <= 0 || newId > 99999) { sendPrefixed(player, msgIdRange, msgIdRangeType); return; }
+                data.redirectChain.add(newId); saveBlocks();
+                sendPrefixed(player, msgRedirectAdded.replace("%id%", String.valueOf(newId)), msgRedirectAddedType);
+                openGui(player, data, "redirect");
+                return;
+            }
+            case "ADD_PLAYER": {
+                Player target = Bukkit.getPlayerExact(message);
+                if (target == null) { sendPrefixed(player, msgPlayerNotFound, msgPlayerNotFoundType); return; }
+                Set<UUID> list = getListByType(data, session.listType);
+                list.add(target.getUniqueId()); saveBlocks();
+                sendPrefixed(player, msgPlayerAdded.replace("%name%", target.getName()), msgPlayerAddedType);
+                GuiContext ctx = guiContexts.get(player.getUniqueId());
+                if (ctx != null) ctx.listType = session.listType;
+                openGui(player, data, "list");
+                return;
+            }
+            default: return;
         }
     }
-
     private void startHologramUpdater() {
         new BukkitRunnable() {
             @Override public void run() {
@@ -1541,7 +1438,6 @@ public final class Main extends JavaPlugin implements Listener {
             }
         }.runTaskTimer(this, 20L, Math.max(1, hologramsUpdateInterval));
     }
-
     private void updateHologram(BlockData data) {
         if (!data.hologramEnabled) { removeHologram(data); return; }
         if (data.customName == null || data.customName.isEmpty()) { removeHologram(data); return; }
@@ -1562,15 +1458,12 @@ public final class Main extends JavaPlugin implements Listener {
             });
             hologramEntities.put(data.key(), stand.getUniqueId());
         } else stand.teleport(loc);
-        String text = data.customName;
-        stand.setCustomName(color(text));
+        stand.setCustomName(color(data.customName));
     }
-
     private void removeHologram(BlockData data) {
         UUID id = hologramEntities.remove(data.key());
         if (id != null) { Entity e = Bukkit.getEntity(id); if (e != null) e.remove(); }
     }
-
     private void startViewSession(Player player, String mode) {
         stopViewSession(player);
         long endTime = System.currentTimeMillis() + (viewDurationTicks * 50L);
@@ -1578,7 +1471,7 @@ public final class Main extends JavaPlugin implements Listener {
         BukkitRunnable runnable = new BukkitRunnable() {
             @Override public void run() {
                 if (!player.isOnline()) { cancel(); viewSessions.remove(player.getUniqueId()); return; }
-                if (System.currentTimeMillis() >= endTime) { cancel(); viewSessions.remove(player.getUniqueId()); sendTeleporterMessage(player, msgViewDisabled, msgViewDisabledType); return; }
+                if (System.currentTimeMillis() >= endTime) { cancel(); viewSessions.remove(player.getUniqueId()); sendTeleporterPrefixed(player, msgViewDisabled, msgViewDisabledType); return; }
                 counter[0]++;
                 if (counter[0] % Math.max(1, viewUpdateTicks) != 0) return;
                 for (BlockData data : blockDataMap.values()) {
@@ -1597,24 +1490,16 @@ public final class Main extends JavaPlugin implements Listener {
         };
         int taskId = runnable.runTaskTimer(this, 0L, 1L).getTaskId();
         viewSessions.put(player.getUniqueId(), new ViewSession(mode, endTime, taskId));
-        sendTeleporterMessage(player, msgViewEnabled.replace("%mode%", mode), msgViewEnabledType);
+        sendTeleporterPrefixed(player, msgViewEnabled.replace("%mode%", mode), msgViewEnabledType);
     }
-
     private void stopViewSession(Player player) {
         ViewSession session = viewSessions.remove(player.getUniqueId());
         if (session != null) Bukkit.getScheduler().cancelTask(session.taskId);
     }
-
     private boolean matchesViewMode(Player player, BlockData data, String mode) {
         UUID uuid = player.getUniqueId();
-        if (mode.equalsIgnoreCase("all")) {
-            if (checkPermission && !player.hasPermission(viewPermAll)) return false;
-            return true;
-        }
-        if (mode.equalsIgnoreCase("owner")) {
-            if (checkPermission && !player.hasPermission(viewPermOwner)) return false;
-            return data.owner.equals(uuid);
-        }
+        if (mode.equalsIgnoreCase("all")) { if (checkPermission && !player.hasPermission(viewPermAll)) return false; return true; }
+        if (mode.equalsIgnoreCase("owner")) { if (checkPermission && !player.hasPermission(viewPermOwner)) return false; return data.owner.equals(uuid); }
         if (mode.equalsIgnoreCase("member")) {
             if (checkPermission && !player.hasPermission(viewPermMember)) return false;
             if (data.owner.equals(uuid)) return true;
@@ -1628,18 +1513,18 @@ public final class Main extends JavaPlugin implements Listener {
         }
         return false;
     }
-
     @EventHandler
     public void onPlayerQuit(PlayerQuitEvent event) {
         UUID uuid = event.getPlayer().getUniqueId();
         chatSessions.remove(uuid);
         openGuis.remove(uuid);
         guiContexts.remove(uuid);
+        guiItemMetaMap.remove(uuid);
         recentInteractions.remove(uuid);
         pendingPearlCancel.remove(uuid);
+        pendingPasswords.remove(uuid);
         stopViewSession(event.getPlayer());
     }
-
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (!command.getName().equalsIgnoreCase("elevator")) return false;
@@ -1654,22 +1539,22 @@ public final class Main extends JavaPlugin implements Listener {
         }
         String sub = args[0].toLowerCase(Locale.ROOT);
         if (sub.equals("reload")) {
-            if (!sender.hasPermission("elevator.reload")) { sender.sendMessage(color(msgNoPermission)); return true; }
+            if (!sender.hasPermission("elevator.reload")) { sender.sendMessage(color(prefix + msgNoPermission)); return true; }
             loadConfig(); loadBlocks();
-            sender.sendMessage(color(msgReloaded));
+            sender.sendMessage(color(prefix + msgReloaded));
             return true;
         }
-        if (!(sender instanceof Player)) { sender.sendMessage(color(msgPlayersOnly)); return true; }
+        if (!(sender instanceof Player)) { sender.sendMessage(color(prefix + msgPlayersOnly)); return true; }
         Player player = (Player) sender;
         if (sub.equals("info")) {
             Block block;
             try { block = player.getTargetBlockExact(10); }
             catch (NoSuchMethodError e) { block = player.getTargetBlock((Set<Material>) null, 10); }
-            if (block == null) { player.sendMessage(color(msgNoBlockInSight)); return true; }
+            if (block == null) { sendPrefixed(player, msgNoBlockInSight, msgNoBlockInSightType); return true; }
             String key = block.getWorld().getName() + ":" + block.getX() + ":" + block.getY() + ":" + block.getZ();
             BlockData data = blockDataMap.get(key);
-            if (data == null) { player.sendMessage(color(msgNotTeleporter)); return true; }
-            player.sendMessage(color(msgHeaderInfo));
+            if (data == null) { sendPrefixed(player, msgNotTeleporter, msgNotTeleporterType); return true; }
+            player.sendMessage(color(prefix + msgHeaderInfo));
             player.sendMessage(color("&#FF5300ID: &f" + data.id));
             player.sendMessage(color("&#FF5300Name: &f" + (data.customName.isEmpty() ? "-" : color(data.customName))));
             player.sendMessage(color("&#FF5300Owner: &f" + Bukkit.getOfflinePlayer(data.owner).getName()));
@@ -1681,12 +1566,14 @@ public final class Main extends JavaPlugin implements Listener {
             player.sendMessage(color("&#FF5300Manage access: &f" + data.manageAccess.name()));
             player.sendMessage(color("&#FF5300Break access: &f" + data.breakAccess.name()));
             player.sendMessage(color("&#FF5300Hologram: &f" + (data.hologramEnabled ? "Yes" : "No")));
+            player.sendMessage(color("&#FF5300Password: &f" + (data.passwordEnabled ? "Yes" : "No")));
+            player.sendMessage(color("&#FF5300Redirect: &f" + (data.redirectEnabled ? "Yes" : "No") + " (" + data.redirectChain.size() + " steps)"));
             return true;
         }
         if (sub.equals("list")) {
             List<String> keys = playerBlocks.get(player.getUniqueId());
-            if (keys == null || keys.isEmpty()) { player.sendMessage(color(msgNoBlocksOwned)); return true; }
-            player.sendMessage(color(msgYourBlocks));
+            if (keys == null || keys.isEmpty()) { sendPrefixed(player, msgNoBlocksOwned, msgNoBlocksOwnedType); return true; }
+            sendPrefixed(player, msgYourBlocks, msgYourBlocksType);
             for (String k : keys) {
                 BlockData data = blockDataMap.get(k);
                 if (data == null) continue;
@@ -1695,26 +1582,38 @@ public final class Main extends JavaPlugin implements Listener {
             return true;
         }
         if (sub.equals("remove")) {
-            if (args.length < 2) { player.sendMessage(color(msgRemoveUsage)); return true; }
+            if (args.length < 2) { sendPrefixed(player, msgRemoveUsage, msgRemoveUsageType); return true; }
             int id;
-            try { id = Integer.parseInt(args[1]); } catch (NumberFormatException e) { player.sendMessage(color(msgRemoveInvalid)); return true; }
+            try { id = Integer.parseInt(args[1]); } catch (NumberFormatException e) { sendPrefixed(player, msgRemoveInvalid, msgRemoveInvalidType); return true; }
             Set<String> keys = idIndex.get(id);
-            if (keys == null || keys.isEmpty()) { player.sendMessage(color(msgRemoveNone)); return true; }
+            if (keys == null || keys.isEmpty()) { sendPrefixed(player, msgRemoveNone, msgRemoveNoneType); return true; }
             List<String> toRemove = new ArrayList<>();
             for (String k : keys) { BlockData data = blockDataMap.get(k); if (data != null && data.owner.equals(player.getUniqueId())) toRemove.add(k); }
-            if (toRemove.isEmpty()) { player.sendMessage(color(msgRemoveNotOwner)); return true; }
+            if (toRemove.isEmpty()) { sendPrefixed(player, msgRemoveNotOwner, msgRemoveNotOwnerType); return true; }
             for (String k : toRemove) { BlockData data = blockDataMap.get(k); if (data != null) removeBlock(data); }
-            player.sendMessage(color(msgRemoveSuccess.replace("%count%", String.valueOf(toRemove.size())).replace("%id%", String.valueOf(id))));
+            sendPrefixed(player, msgRemoveSuccess.replace("%count%", String.valueOf(toRemove.size())).replace("%id%", String.valueOf(id)), msgRemoveSuccessType);
             return true;
         }
         if (sub.equals("view")) {
-            if (args.length < 2) { stopViewSession(player); sendTeleporterMessage(player, msgViewDisabled, msgViewDisabledType); return true; }
+            if (args.length < 2) { stopViewSession(player); sendTeleporterPrefixed(player, msgViewDisabled, msgViewDisabledType); return true; }
             String mode = args[1].toLowerCase(Locale.ROOT);
-            if (!mode.equals("all") && !mode.equals("owner") && !mode.equals("member")) { sendTeleporterMessage(player, msgViewUsage, msgViewUsageType); return true; }
+            if (!mode.equals("all") && !mode.equals("owner") && !mode.equals("member")) { sendTeleporterPrefixed(player, msgViewUsage, msgViewUsageType); return true; }
             startViewSession(player, mode);
             return true;
         }
-        player.sendMessage(color(msgUnknownSub));
+        if (sub.equals("menu")) {
+            Block block;
+            try { block = player.getTargetBlockExact(10); }
+            catch (NoSuchMethodError e) { block = player.getTargetBlock((Set<Material>) null, 10); }
+            if (block == null) { sendPrefixed(player, msgNoBlockInSight, msgNoBlockInSightType); return true; }
+            String key = block.getWorld().getName() + ":" + block.getX() + ":" + block.getY() + ":" + block.getZ();
+            BlockData data = blockDataMap.get(key);
+            if (data == null) { sendPrefixed(player, msgNotTeleporter, msgNotTeleporterType); return true; }
+            if (!canManage(player, data)) { sendPrefixed(player, msgNoPermission, msgNoPermissionType); return true; }
+            openGui(player, data, "main");
+            return true;
+        }
+        sendPrefixed(player, msgUnknownSub, msgUnknownSubType);
         return true;
     }
 }
