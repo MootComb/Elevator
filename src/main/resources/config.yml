@@ -359,9 +359,6 @@ GUI:
             - "&fOWNER / MEMBERS / GOVERNINGS / ALL"
           left_click_commands:
             - "[elevator_toggle] break_access"
-          view_requirement:
-            type: "holding_item"
-            material: DIAMOND_PICKAXE
         members:
           material: CHEST
           slot: 32
