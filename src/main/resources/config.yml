@@ -243,10 +243,6 @@ Messages:
   BlockBoundType: CHAT
 
 Titles:
-  Elevator:
-    FadeIn: 10
-    Stay: 30
-    FadeOut: 10
   Teleporter:
     FadeIn: 10
     Stay: 30
