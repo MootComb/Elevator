@@ -1,136 +1,144 @@
-# ============================================
-# ELEVATOR PLUGIN CONFIGURATION
-# ============================================
-
 Debug: false
 
-# ============================================
-# ELEVATOR SETTINGS
-# ============================================
-Elevator:
-  BlockTypes:
-    - CARPET
-    - BLACK_CARPET
-    - BLUE_CARPET
-    - BROWN_CARPET
-    - CYAN_CARPET
-    - GRAY_CARPET
-    - GREEN_CARPET
-    - LIGHT_BLUE_CARPET
-    - LIGHT_GRAY_CARPET
-    - LIME_CARPET
-    - MAGENTA_CARPET
-    - ORANGE_CARPET
-    - PINK_CARPET
-    - PURPLE_CARPET
-    - RED_CARPET
-    - WHITE_CARPET
-    - YELLOW_CARPET
-  BlockDistance: 50
+Teleporter:
   EnableParticle: false
   ParticleType: SPELL_WITCH
   ParticleCount: 20
   UsageSound: entity.enderman.teleport
   ActivateSound: entity.player.levelup
   AllowUnsafe: true
-
-# ============================================
-# TELEPORTER SETTINGS
-# ============================================
-Teleporter:
-  EnableParticle: false
-  UsageSound: entity.enderman.teleport
-  AllowUnsafe: true
-  AllowCrossWorlds: true
   AllowAllBlocks: true
   BlockTypesPermission: ""
   BlockTypes:
     - SEA_LANTERN
     - CRYING_OBSIDIAN
     - LIGHT_BLUE_GLAZED_TERRACOTTA
-  DistanceCheck:
-    Enabled: true
-    MaxDistance: 10000.0
   Bind:
     Items:
       ENDER_PEARL:
         Consume: true
         ConsumeAmount: 1
-        CheckPermission: false
-        Permission: "elevator.bind.pearl"
+        Require: false
+        Permission: "teleporter.bind.pearl"
       EYE_OF_ENDER:
         Consume: true
         ConsumeAmount: 1
-        CheckPermission: false
-        Permission: "elevator.bind.eye"
+        Require: false
+        Permission: "teleporter.bind.eye"
 
 Features:
   Teleport:
     Enabled: true
-    CheckPermission: false
-    Permission: "elevator.teleport"
+    Require: false
+    Permission: "teleporter.teleport"
     DefaultAccess: "ALL"
   Manage:
     Enabled: true
-    CheckPermission: false
-    Permission: "elevator.manage"
+    Require: false
+    Permission: "teleporter.manage"
     DefaultAccess: "OWNER"
   Break:
     Enabled: true
-    CheckPermission: false
-    Permission: "elevator.break"
+    Require: false
+    Permission: "teleporter.break"
     DefaultAccess: "ALL"
   Bind:
     Enabled: true
-    CheckPermission: false
-    Permission: "elevator.bind"
+    Require: false
+    Permission: "teleporter.bind"
   Password:
     Enabled: true
-    CheckPermission: false
-    Permission: "elevator.password"
+    Require: false
+    Permission: "teleporter.password"
   Redirect:
     Enabled: true
-    CheckPermission: false
-    Permission: "elevator.redirect"
+    Require: false
+    Permission: "teleporter.redirect"
   Hologram:
     Enabled: true
-    CheckPermission: false
-    Permission: "elevator.hologram"
+    Require: false
+    Permission: "teleporter.hologram"
   Naming:
     Enabled: true
-    CheckPermission: false
-    Permission: "elevator.naming"
-  DistanceCheck:
+    Require: false
+    Permission: "teleporter.naming"
+
+Restrictions:
+  Cooldown:
+    Enabled: false
+    Time: 30
+    MessageType: SUBTITLE
+    Locale: "&#FF5300Teleporter &7| &fCooldown: %time%s"
+    Exempt:
+      Require: true
+      Permission: "teleporter.bypass"
+  Access:
     Enabled: true
-    CheckBypassPermission: false
-    BypassPermission: "elevator.bypass.distance"
+    Exempt:
+      Require: true
+      Permission: "teleporter.bypass.access"
+  Item:
+    Enabled: true
+    Exempt:
+      Require: true
+      Permission: "teleporter.bypass.item"
+  Sneak:
+    Enabled: true
+    Exempt:
+      Require: true
+      Permission: "teleporter.bypass.sneak"
+  Distance:
+    Enabled: true
+    MaxDistance: 10000.0
+    Exempt:
+      Require: true
+      Permission: "teleporter.bypass.distance"
   CrossWorld:
     Enabled: true
-    CheckBypassPermission: false
-    BypassPermission: "elevator.bypass.crossworld"
+    Allow: true
+    Exempt:
+      Require: true
+      Permission: "teleporter.bypass.crossworld"
+
+Commands:
+  Info:
+    Enabled: true
+    Require: false
+    Permission: "teleporter.info"
+  List:
+    Enabled: true
+    Require: false
+    Permission: "teleporter.list"
+  Remove:
+    Enabled: true
+    Require: false
+    Permission: "teleporter.remove"
+  Menu:
+    Enabled: true
+    Require: false
+    Permission: "teleporter.menu"
+  Tp:
+    Enabled: true
+    Require: true
+    Permission: "teleporter.tp"
+  Reload:
+    Enabled: true
+    Require: true
+    Permission: "teleporter.reload"
   View:
     Enabled: true
-    PermissionAll: "elevator.view.all"
-    CheckPermissionAll: false
-    PermissionOwner: "elevator.view.owner"
-    CheckPermissionOwner: false
-    PermissionMember: "elevator.view.member"
-    CheckPermissionMember: false
+    All:
+      Require: false
+      Permission: "teleporter.view.all"
+    Owner:
+      Require: false
+      Permission: "teleporter.view.owner"
+    Member:
+      Require: false
+      Permission: "teleporter.view.member"
 
-# ============================================
-# COOLDOWN SETTINGS
-# ============================================
-Cooldown:
-  EnableCooldown: false
-  Time: 30
-  MessageType: SUBTITLE
-  Locale: "&#FF5300Elevator &7| &fCooldown: %time%s"
-
-# ============================================
-# MESSAGES
-# ============================================
 Messages:
-  Prefix: "&#FF5300Elevator &7| &f"
+  Prefix: "&#FF5300Teleporter &7| &f"
   IdPrompt: "&fType a number (1-99999) or 'cancel'."
   IdPromptType: CHAT
   IdInvalid: "&fInvalid number."
@@ -189,7 +197,7 @@ Messages:
   NoBlocksOwnedType: CHAT
   YourBlocks: "&fYour teleporter blocks:"
   YourBlocksType: CHAT
-  RemoveUsage: "&fUsage: /elevator remove <id>"
+  RemoveUsage: "&fUsage: /teleporter remove [id]"
   RemoveUsageType: CHAT
   RemoveInvalid: "&fInvalid ID."
   RemoveInvalidType: CHAT
@@ -213,7 +221,7 @@ Messages:
   ViewDisabledType: CHAT
   ViewEnabled: "&fView mode: %mode%"
   ViewEnabledType: CHAT
-  ViewUsage: "&fUsage: /elevator view <all|owner|member>"
+  ViewUsage: "&fUsage: /teleporter view <all|owner|member>"
   ViewUsageType: CHAT
   TeleportSuccess: "&fTeleported!"
   TeleportSuccessType: NONE
@@ -234,9 +242,6 @@ Messages:
   BlockBound: "&fBlock bound! Set an ID to link it."
   BlockBoundType: CHAT
 
-# ============================================
-# TITLE SETTINGS
-# ============================================
 Titles:
   Elevator:
     FadeIn: 10
@@ -247,9 +252,6 @@ Titles:
     Stay: 30
     FadeOut: 10
 
-# ============================================
-# VIEW MODE
-# ============================================
 View:
   DurationTicks: 200
   UpdateEveryTicks: 5
@@ -257,9 +259,6 @@ View:
   ParticleCount: 3
   ParticleType: END_ROD
 
-# ============================================
-# HOLOGRAMS
-# ============================================
 Holograms:
   DefaultEnabled: false
   DefaultColor: "&f"
@@ -267,53 +266,17 @@ Holograms:
   UpdateIntervalTicks: 20
   LineHeight: 0.3
 
-# ============================================
-# BLOCK NAMING
-# ============================================
 BlockNaming:
   Enabled: true
   MaxLength: 64
   DefaultName: ""
   DefaultColor: "&f"
 
-# ============================================
-# DISABLED WORLDS
-# ============================================
 DisabledWorlds:
-  Elevator:
-    - "world_nether"
-    - "world_the_end"
   Teleporter:
     - "world_nether"
     - "world_the_end"
 
-# ============================================
-# PERMISSIONS
-# ============================================
-Permissions:
-  Bypass:
-    Cooldown:
-      Check: true
-      Permission: "elevator.bypass"
-    Access:
-      Check: true
-      Permission: "elevator.bypass.access"
-    Item:
-      Check: true
-      Permission: "elevator.bypass.item"
-    Sneak:
-      Check: true
-      Permission: "elevator.bypass.sneak"
-
-# ============================================
-# GUI MENUS
-# Placeholders:
-#   %id% %blockname% %click% %sneak% %item% %location%
-#   %teleport_access% %manage_access% %break_access%
-#   %password% %redirect% %members% %governings%
-#   %count% %list% %index% %value% %page% %pages%
-#   %hologram% %player% %entry%
-# ============================================
 GUI:
   Menus:
     main:
@@ -327,7 +290,7 @@ GUI:
           lore:
             - "&fClick to change ID"
           left_click_commands:
-            - "[elevator_input] SET_ID"
+            - "[teleporter_input] SET_ID"
         click_type:
           material: LEVER
           slot: 19
@@ -335,7 +298,7 @@ GUI:
           lore:
             - "&fLeft or Right mouse button"
           left_click_commands:
-            - "[elevator_toggle] click"
+            - "[teleporter_toggle] click"
         sneak:
           material: SHIELD
           slot: 20
@@ -343,7 +306,7 @@ GUI:
           lore:
             - "&fToggle sneak requirement"
           left_click_commands:
-            - "[elevator_toggle] sneak"
+            - "[teleporter_toggle] sneak"
         required_item:
           material: NAME_TAG
           slot: 21
@@ -352,7 +315,7 @@ GUI:
             - "&fRequired: %value%"
             - "&fClick to change"
           left_click_commands:
-            - "[elevator_input] SET_ITEM"
+            - "[teleporter_input] SET_ITEM"
         location:
           material: ENDER_EYE
           slot: 22
@@ -361,7 +324,7 @@ GUI:
             - "&fTOP or CURRENT"
             - "&fClick to cycle"
           left_click_commands:
-            - "[elevator_toggle] location"
+            - "[teleporter_toggle] location"
         name:
           material: BOOK
           slot: 23
@@ -369,7 +332,7 @@ GUI:
           lore:
             - "&fClick to rename"
           left_click_commands:
-            - "[elevator_input] SET_NAME"
+            - "[teleporter_input] SET_NAME"
         hologram:
           material: ARMOR_STAND
           slot: 24
@@ -377,7 +340,7 @@ GUI:
           lore:
             - "&fToggle hologram above block"
           left_click_commands:
-            - "[elevator_toggle] hologram"
+            - "[teleporter_toggle] hologram"
         redirect:
           material: COMPASS
           slot: 25
@@ -400,7 +363,7 @@ GUI:
             - "&fClick to cycle"
             - "&fOWNER / MEMBERS / GOVERNINGS / ALL"
           left_click_commands:
-            - "[elevator_toggle] teleport_access"
+            - "[teleporter_toggle] teleport_access"
         manage_access:
           material: COMMAND_BLOCK
           slot: 30
@@ -409,7 +372,7 @@ GUI:
             - "&fClick to cycle"
             - "&fOWNER / MEMBERS / GOVERNINGS / ALL"
           left_click_commands:
-            - "[elevator_toggle] manage_access"
+            - "[teleporter_toggle] manage_access"
         break_access:
           material: DIAMOND_PICKAXE
           slot: 32
@@ -418,7 +381,7 @@ GUI:
             - "&fClick to cycle"
             - "&fOWNER / MEMBERS / GOVERNINGS / ALL"
           left_click_commands:
-            - "[elevator_toggle] break_access"
+            - "[teleporter_toggle] break_access"
         members:
           material: PLAYER_HEAD
           slot: 31
@@ -434,7 +397,7 @@ GUI:
           lore:
             - "&fClick to set / disable"
           left_click_commands:
-            - "[elevator_input] SET_PASSWORD"
+            - "[teleporter_input] SET_PASSWORD"
 
     members:
       title: "&8Members & Governings"
@@ -489,7 +452,7 @@ GUI:
           lore:
             - "&fClick to remove"
           left_click_commands:
-            - "[elevator_list_remove] %uuid%"
+            - "[teleporter_list_remove] %uuid%"
         slots:
           start: 0
           end: 44
@@ -499,13 +462,13 @@ GUI:
           slot: 45
           display_name: "&#FF5300Previous"
           left_click_commands:
-            - "[elevator_page] previous"
+            - "[teleporter_page] previous"
         next:
           material: ARROW
           slot: 53
           display_name: "&#FF5300Next"
           left_click_commands:
-            - "[elevator_page] next"
+            - "[teleporter_page] next"
         back:
           material: ARROW
           slot: 49
@@ -519,7 +482,7 @@ GUI:
           lore:
             - "&fClick to add a player by name"
           left_click_commands:
-            - "[elevator_input] ADD_PLAYER"
+            - "[teleporter_input] ADD_PLAYER"
 
     redirect:
       title: "&8Redirect Chain"
@@ -532,7 +495,7 @@ GUI:
           lore:
             - "&fToggle redirect mode"
           left_click_commands:
-            - "[elevator_toggle] redirect"
+            - "[teleporter_toggle] redirect"
         add:
           material: EMERALD
           slot: 45
@@ -540,7 +503,7 @@ GUI:
           lore:
             - "&fClick to add an ID to the chain"
           left_click_commands:
-            - "[elevator_input] ADD_STEP"
+            - "[teleporter_input] ADD_STEP"
         clear:
           material: LAVA_BUCKET
           slot: 48
@@ -548,7 +511,7 @@ GUI:
           lore:
             - "&fClick to remove all IDs"
           left_click_commands:
-            - "[elevator_input] CLEAR_STEPS"
+            - "[teleporter_input] CLEAR_STEPS"
         back:
           material: ARROW
           slot: 49
@@ -562,7 +525,7 @@ GUI:
           lore:
             - "&fClick to remove"
           left_click_commands:
-            - "[elevator_redirect_remove] %index%"
+            - "[teleporter_redirect_remove] %index%"
         slots:
           start: 9
           end: 44
