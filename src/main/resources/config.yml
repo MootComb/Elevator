@@ -1,5 +1,12 @@
+# ============================================
+# ELEVATOR PLUGIN CONFIGURATION
+# ============================================
+
 Debug: false
 
+# ============================================
+# ELEVATOR SETTINGS
+# ============================================
 Elevator:
   BlockTypes:
     - CARPET
@@ -28,6 +35,9 @@ Elevator:
   ActivateSound: entity.player.levelup
   AllowUnsafe: true
 
+# ============================================
+# TELEPORTER SETTINGS
+# ============================================
 Teleporter:
   EnableParticle: true
   UsageSound: entity.enderman.teleport
@@ -45,33 +55,242 @@ Teleporter:
     Enabled: true
     MaxDistance: 10000.0
 
+  Bind:
+    ConsumePearl: true
+
+# ============================================
+# COOLDOWN SETTINGS
+# ============================================
 Cooldown:
   EnableCooldown: false
   Time: 30
+  MessageType: SUBTITLE
   Locale: "&#FF5300Elevator &7| &fCooldown: %time%s"
-  MessageType: SUBTITLE
 
+# ============================================
+# ELEVATOR MESSAGES
+# Type values: CHAT / TITLE / SUBTITLE / NONE
+# ============================================
 ElevatorLocale:
-  MessageType: SUBTITLE
   Title:
     FadeIn: 10
     Stay: 40
     FadeOut: 10
-  ElevatorUp: "&#FF5300Elevator &7| &fGoing up"
-  ElevatorDown: "&#FF5300Elevator &7| &fGoing down"
-  ElevatorDanger: "&#FF5300Elevator &7| &fDanger! Unsafe location!"
 
+  ElevatorUp: "&#FF5300Elevator &7| &fGoing up"
+  ElevatorUpType: SUBTITLE
+
+  ElevatorDown: "&#FF5300Elevator &7| &fGoing down"
+  ElevatorDownType: SUBTITLE
+
+  ElevatorDanger: "&#FF5300Elevator &7| &fDanger! Unsafe location!"
+  ElevatorDangerType: SUBTITLE
+
+# ============================================
+# TELEPORTER MESSAGES
+# Type values: CHAT / TITLE / SUBTITLE / NONE
+# ============================================
 TeleporterLocale:
-  MessageType: SUBTITLE
   Title:
     FadeIn: 10
     Stay: 60
     FadeOut: 10
 
+  TeleportSuccess: "&#FF5300Elevator &7| &fTeleported!"
+  TeleportSuccessType: SUBTITLE
+
+  BlockBound: "&#FF5300Elevator &7| &fBlock bound! Set an ID to link it."
+  BlockBoundType: CHAT
+
+  NoPair: "&#FF5300Elevator &7| &fNo paired block found."
+  NoPairType: CHAT
+
+  NoCrossWorld: "&#FF5300Elevator &7| &fCannot teleport across worlds."
+  NoCrossWorldType: CHAT
+
+  MissingItem: "&#FF5300Elevator &7| &fYou are missing the required item."
+  MissingItemType: CHAT
+
+  DistanceTooFar: "&#FF5300Elevator &7| &fDestination is too far away."
+  DistanceTooFarType: CHAT
+
+# ============================================
+# GUI TEXTS
+# ============================================
+GUI:
+  Main:
+    Title: "&7Teleporter Block"
+    IdItem: "&#FF5300ID: %id%"
+    IdItemEmpty: "&#FF5300ID: Not set"
+    IdItemLore: "&7Click to change ID"
+    ClickItem: "&#FF5300Click Type: %value%"
+    ClickItemLore: "&7Left or Right mouse button"
+    SneakItem: "&#FF5300Require Sneak: %value%"
+    SneakItemLore: "&7Toggle sneak requirement"
+    RequiredItem: "&#FF5300Require Item: %value%"
+    RequiredItemLore: "&7Required: %name%"
+    RequiredItemLoreEmpty: "&7Required: -"
+    RequiredItemLoreClick: "&7Click to change"
+    LocationItem: "&#FF5300Teleport Location: %value%"
+    LocationItemLore: "&7TOP or CURRENT"
+    LocationItemLoreClick: "&7Click to cycle"
+    NameItem: "&#FF5300Name: %value%"
+    NameItemEmpty: "&#FF5300Name: Not set"
+    NameItemLore: "&7Click to rename"
+    HologramItem: "&#FF5300Hologram: %value%"
+    HologramItemLore: "&7Toggle hologram above block"
+    HologramColorItem: "&#FF5300Hologram Color: %value%"
+    HologramColorItemLore: "&7Click to change color"
+    TeleportAccessItem: "&#FF5300Teleport Access: %value%"
+    TeleportAccessItemLore: "&7Click to cycle"
+    TeleportAccessItemLore2: "&7OWNER / MEMBERS / OWNERS / ALL"
+    ManageAccessItem: "&#FF5300Manage Access: %value%"
+    ManageAccessItemLore: "&7Click to cycle"
+    ManageAccessItemLore2: "&7OWNER / OWNERS / ALL"
+    BreakAccessItem: "&#FF5300Break Access: %value%"
+    BreakAccessItemLore: "&7Click to cycle"
+    BreakAccessItemLore2: "&7OWNER / MEMBERS / OWNERS / ALL"
+    MembersItem: "&#FF5300Members & Owners"
+    MembersItemLore: "&7Manage local and global lists"
+    CloseItem: "&#FF5300Close"
+  Members:
+    Title: "&7Members & Owners"
+    LocalMembers: "&#FF5300Local Members: %count%"
+    LocalOwners: "&#FF5300Local Owners: %count%"
+    GlobalMembers: "&#FF5300Global Members: %count%"
+    GlobalOwners: "&#FF5300Global Owners: %count%"
+    ClickManage: "&7Click to manage"
+    Back: "&#FF5300Back"
+  List:
+    Title: "&7%list%"
+    PlayerItem: "&#FF5300%name%"
+    PlayerItemLore: "&7Click to remove"
+    Previous: "&#FF5300Previous"
+    Next: "&#FF5300Next"
+    Back: "&#FF5300Back"
+    AddPlayer: "&#FF5300Add player"
+
+# ============================================
+# MESSAGES
+# Type values: CHAT / TITLE / SUBTITLE / NONE
+# ============================================
+Messages:
+  IdPrompt: "&#FF5300Elevator &7| &fType a number (1-99999) or 'cancel'."
+  IdPromptType: CHAT
+  IdInvalid: "&#FF5300Elevator &7| &fInvalid number."
+  IdInvalidType: CHAT
+  IdRange: "&#FF5300Elevator &7| &fNumber must be 1-99999."
+  IdRangeType: CHAT
+  IdUsed: "&#FF5300Elevator &7| &fThis ID is already used by 2 blocks."
+  IdUsedType: CHAT
+  IdSet: "&#FF5300Elevator &7| &fID set to %id%"
+  IdSetType: CHAT
+  ItemPrompt: "&#FF5300Elevator &7| &fType item name or 'no' to disable."
+  ItemPromptType: CHAT
+  ItemDisabled: "&#FF5300Elevator &7| &fItem requirement disabled."
+  ItemDisabledType: CHAT
+  ItemSet: "&#FF5300Elevator &7| &fRequired item: %name%"
+  ItemSetType: CHAT
+  NamePrompt: "&#FF5300Elevator &7| &fType a name for this block or 'cancel'."
+  NamePromptType: CHAT
+  NameSet: "&#FF5300Elevator &7| &fName set to: %name%"
+  NameSetType: CHAT
+  ColorPrompt: "&#FF5300Elevator &7| &fType a HEX color (e.g. &#FF5300) or 'cancel'."
+  ColorPromptType: CHAT
+  ColorSet: "&#FF5300Elevator &7| &fColor set to: %color%"
+  ColorSetType: CHAT
+  ColorInvalid: "&#FF5300Elevator &7| &fInvalid HEX color. Use format &#RRGGBB"
+  ColorInvalidType: CHAT
+  Cancelled: "&#FF5300Elevator &7| &fCancelled."
+  CancelledType: CHAT
+  NoPermission: "&#FF5300Elevator &7| &fNo permission."
+  NoPermissionType: CHAT
+  BlockGone: "&#FF5300Elevator &7| &fBlock no longer exists."
+  BlockGoneType: CHAT
+  PlayerNotFound: "&#FF5300Elevator &7| &fPlayer not found."
+  PlayerNotFoundType: CHAT
+  PlayerAdded: "&#FF5300Elevator &7| &fAdded %name%"
+  PlayerAddedType: CHAT
+  NoBlockInSight: "&#FF5300Elevator &7| &fNo block in sight."
+  NoBlockInSightType: CHAT
+  NotTeleporter: "&#FF5300Elevator &7| &fThis block is not a teleporter."
+  NotTeleporterType: CHAT
+  NoBlocksOwned: "&#FF5300Elevator &7| &fYou have no teleporter blocks."
+  NoBlocksOwnedType: CHAT
+  YourBlocks: "&#FF5300Elevator &7| &fYour teleporter blocks:"
+  YourBlocksType: CHAT
+  RemoveUsage: "&#FF5300Elevator &7| &fUsage: /elevator remove <id>"
+  RemoveUsageType: CHAT
+  RemoveInvalid: "&#FF5300Elevator &7| &fInvalid ID."
+  RemoveInvalidType: CHAT
+  RemoveNone: "&#FF5300Elevator &7| &fNo blocks with that ID."
+  RemoveNoneType: CHAT
+  RemoveNotOwner: "&#FF5300Elevator &7| &fYou do not own any block with that ID."
+  RemoveNotOwnerType: CHAT
+  RemoveSuccess: "&#FF5300Elevator &7| &fRemoved %count% block(s) with ID %id%"
+  RemoveSuccessType: CHAT
+  UnknownSub: "&#FF5300Elevator &7| &fUnknown subcommand."
+  UnknownSubType: CHAT
+  PlayersOnly: "&#FF5300Elevator &7| &fPlayers only."
+  PlayersOnlyType: CHAT
+  Reloaded: "&#FF5300Elevator &7| &fConfig reloaded!"
+  ReloadedType: CHAT
+  ListPrompt: "&#FF5300Elevator &7| &fType player name or 'cancel'."
+  ListPromptType: CHAT
+  HeaderInfo: "&#FF5300Elevator &7| &fBlock info:"
+  HeaderInfoType: CHAT
+  ViewDisabled: "&#FF5300Elevator &7| &fView mode disabled."
+  ViewDisabledType: CHAT
+  ViewEnabled: "&#FF5300Elevator &7| &fView mode: %mode%"
+  ViewEnabledType: CHAT
+  ViewUsage: "&#FF5300Elevator &7| &fUsage: /elevator view <all|owner|member>"
+  ViewUsageType: CHAT
+
+# ============================================
+# VIEW MODE
+# ============================================
+View:
+  DurationTicks: 200
+  UpdateEveryTicks: 5
+  MaxDistance: 64
+  ParticleCount: 3
+  ParticleType: END_ROD
+  PermissionAll: "elevator.view.all"
+  PermissionOwner: "elevator.view.owner"
+  PermissionMember: "elevator.view.member"
+
+# ============================================
+# HOLOGRAMS
+# ============================================
+Holograms:
+  DefaultEnabled: false
+  DefaultColor: "&#FF5300"
+  ViewDistance: 16
+  UpdateIntervalTicks: 20
+  ShowId: true
+  ShowName: true
+  Format: "%name% &7| &fID: %id%"
+  FormatNoName: "&7ID: %id%"
+  LineHeight: 0.3
+
+# ============================================
+# BLOCK NAMING
+# ============================================
+BlockNaming:
+  Enabled: true
+  MaxLength: 32
+  DefaultName: ""
+
+# ============================================
+# DISABLED WORLDS
+# ============================================
 DisabledWorlds:
   - "world_nether"
   - "world_the_end"
 
+# ============================================
+# PERMISSIONS
+# ============================================
 Permissions:
   CheckPermission: false
   Use: "elevator.use"
@@ -79,9 +298,16 @@ Permissions:
   Teleport: "elevator.teleport"
   Manage: "elevator.manage"
   BreakBypass: "elevator.break.bypass"
+  Bypass:
+    Access: "elevator.bypass.access"
+    Distance: "elevator.bypass.distance"
+    Item: "elevator.bypass.item"
+    Sneak: "elevator.bypass.sneak"
 
+# ============================================
+# TELEPORTER BLOCK FEATURES
 # Access values: OWNER, MEMBERS, OWNERS, ALL
-# Teleport Location values: TOP, CURRENT
+# ============================================
 TeleporterBlock:
   Teleport:
     Enabled: true
@@ -98,44 +324,3 @@ TeleporterBlock:
     CheckPermission: false
     Permission: "elevator.break"
     DefaultAccess: "ALL"
-
-GUI:
-  Main:
-    Title: "&7Teleporter Block"
-  Members:
-    Title: "&7Members & Owners"
-  List:
-    Title: "&7%list%"
-
-Messages:
-  BlockBound: "&#FF5300Elevator &7| &fBlock bound! Set an ID to link it."
-  IdPrompt: "&#FF5300Elevator &7| &fType a number (1-99999) or 'cancel'."
-  IdInvalid: "&#FF5300Elevator &7| &fInvalid number."
-  IdRange: "&#FF5300Elevator &7| &fNumber must be 1-99999."
-  IdUsed: "&#FF5300Elevator &7| &fThis ID is already used by 2 blocks."
-  IdSet: "&#FF5300Elevator &7| &fID set to %id%"
-  ItemPrompt: "&#FF5300Elevator &7| &fType item name or 'no' to disable."
-  ItemDisabled: "&#FF5300Elevator &7| &fItem requirement disabled."
-  ItemSet: "&#FF5300Elevator &7| &fRequired item: %name%"
-  Cancelled: "&#FF5300Elevator &7| &fCancelled."
-  NoPermission: "&#FF5300Elevator &7| &fNo permission."
-  BlockGone: "&#FF5300Elevator &7| &fBlock no longer exists."
-  PlayerNotFound: "&#FF5300Elevator &7| &fPlayer not found."
-  PlayerAdded: "&#FF5300Elevator &7| &fAdded %name%"
-  TeleportSuccess: "&#FF5300Elevator &7| &fTeleported!"
-  NoPair: "&#FF5300Elevator &7| &fNo paired block found."
-  NoCrossWorld: "&#FF5300Elevator &7| &fCannot teleport across worlds."
-  NoBlockInSight: "&#FF5300Elevator &7| &fNo block in sight."
-  NotTeleporter: "&#FF5300Elevator &7| &fThis block is not a teleporter."
-  NoBlocksOwned: "&#FF5300Elevator &7| &fYou have no teleporter blocks."
-  YourBlocks: "&#FF5300Elevator &7| &fYour teleporter blocks:"
-  RemoveUsage: "&#FF5300Elevator &7| &fUsage: /elevator remove <id>"
-  RemoveInvalid: "&#FF5300Elevator &7| &fInvalid ID."
-  RemoveNone: "&#FF5300Elevator &7| &fNo blocks with that ID."
-  RemoveNotOwner: "&#FF5300Elevator &7| &fYou do not own any block with that ID."
-  RemoveSuccess: "&#FF5300Elevator &7| &fRemoved %count% block(s) with ID %id%"
-  UnknownSub: "&#FF5300Elevator &7| &fUnknown subcommand."
-  PlayersOnly: "&#FF5300Elevator &7| &fPlayers only."
-  Reloaded: "&#FF5300Elevator &7| &fConfig reloaded!"
-  ListPrompt: "&#FF5300Elevator &7| &fType player name or 'cancel'."
-  HeaderInfo: "&#FF5300Elevator &7| &fBlock info:"
