@@ -261,18 +261,15 @@ TeleporterBlock:
 
 # ============================================
 # GUI MENUS
-# Style: DeluxeMenus-like
 # Placeholders:
-#   %id% %name% %click% %sneak% %item% %location%
+#   %id% %blockname% %click% %sneak% %item% %location%
 #   %teleport_access% %manage_access% %break_access%
 #   %password% %redirect% %members% %governings%
-#   %count% %list% %name% %index% %value% %page% %pages%
+#   %count% %list% %index% %value% %page% %pages%
+#   %hologram% %player% %entry%
 # ============================================
 GUI:
   Menus:
-    # --------------------------------------------
-    # Main block menu
-    # --------------------------------------------
     main:
       title: "&8Teleporter Block"
       size: 54
@@ -322,7 +319,7 @@ GUI:
         name:
           material: BOOK
           slot: 23
-          display_name: "&#FF5300Name: %name%"
+          display_name: "&#FF5300Name: %blockname%"
           lore:
             - "&fClick to rename"
           left_click_commands:
@@ -330,7 +327,7 @@ GUI:
         hologram:
           material: ARMOR_STAND
           slot: 24
-          display_name: "&#FF5300Hologram: %value%"
+          display_name: "&#FF5300Hologram: %hologram%"
           lore:
             - "&fToggle hologram above block"
           left_click_commands:
@@ -350,7 +347,7 @@ GUI:
           display_name: "&#FF5300Manage Access: %manage_access%"
           lore:
             - "&fClick to cycle"
-            - "&fOWNER / GOVERNINGS / ALL"
+            - "&fOWNER / MEMBERS / GOVERNINGS / ALL"
           left_click_commands:
             - "[elevator_toggle] manage_access"
         break_access:
@@ -396,9 +393,6 @@ GUI:
           left_click_commands:
             - "[close]"
 
-    # --------------------------------------------
-    # Members & Governings menu
-    # --------------------------------------------
     members:
       title: "&8Members & Governings"
       size: 54
@@ -442,14 +436,10 @@ GUI:
           left_click_commands:
             - "[opengui] main"
 
-    # --------------------------------------------
-    # Player list (members / governings)
-    # --------------------------------------------
     list:
       title: "&8%list%"
       size: 54
       dynamic:
-        # Placeholder for each player in the list
         player_entry:
           material: PLAYER_HEAD
           display_name: "&#FF5300%name%"
@@ -457,7 +447,6 @@ GUI:
             - "&fClick to remove"
           left_click_commands:
             - "[elevator_list_remove] %uuid%"
-        # Slots range for entries (inclusive)
         slots:
           start: 0
           end: 44
@@ -489,9 +478,6 @@ GUI:
           left_click_commands:
             - "[elevator_input] ADD_PLAYER"
 
-    # --------------------------------------------
-    # Redirect chain editor
-    # --------------------------------------------
     redirect:
       title: "&8Redirect Chain"
       size: 54
@@ -499,7 +485,7 @@ GUI:
         toggle:
           material: LEVER
           slot: 4
-          display_name: "&#FF5300Redirect: %value%"
+          display_name: "&#FF5300Redirect: %redirect%"
           lore:
             - "&fToggle redirect mode"
           left_click_commands:
