@@ -26,6 +26,7 @@ import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.entity.ProjectileLaunchEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
+import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
@@ -190,7 +191,7 @@ public final class Main extends JavaPlugin implements Listener, TabCompleter {
         public UUID owner;
         public String world;
         public int x, y, z;
-        public ClickType clickType = ClickType.RIGHT;
+        public BindClickType clickType = BindClickType.RIGHT;
         public boolean requireSneak = false;
         public boolean requireItem = false;
         public String requiredItemName = "";
@@ -365,11 +366,11 @@ public final class Main extends JavaPlugin implements Listener, TabCompleter {
         }
     }
 
-    private ClickType getClickType(String type) {
+    private BindClickType getClickType(String type) {
         try {
-            return ClickType.valueOf(type.toUpperCase(Locale.ROOT));
+            return BindClickType.valueOf(type.toUpperCase(Locale.ROOT));
         } catch (IllegalArgumentException e) {
-            return ClickType.RIGHT;
+            return BindClickType.RIGHT;
         }
     }
 
@@ -1056,7 +1057,7 @@ public final class Main extends JavaPlugin implements Listener, TabCompleter {
             debug("No teleport rights for " + player.getName());
             return;
         }
-        ClickType clicked = isRight ? ClickType.RIGHT : ClickType.LEFT;
+        BindClickType clicked = isRight ? BindClickType.RIGHT : BindClickType.LEFT;
         if (data.clickType != clicked) return;
         boolean bypassSneak = checkPermission && player.hasPermission(permBypassSneak);
         if (!bypassSneak) {
@@ -1157,7 +1158,7 @@ public final class Main extends JavaPlugin implements Listener, TabCompleter {
         data.x = block.getX();
         data.y = block.getY();
         data.z = block.getZ();
-        data.clickType = ClickType.RIGHT;
+        data.clickType = BindClickType.RIGHT;
         data.teleportAccess = featureTeleportDefaultAccess;
         data.manageAccess = featureManageDefaultAccess;
         data.breakAccess = featureBreakDefaultAccess;
@@ -1725,7 +1726,7 @@ public final class Main extends JavaPlugin implements Listener, TabCompleter {
             String toggle = cmd.substring(18).trim();
             switch (toggle) {
                 case "click":
-                    data.clickType = data.clickType == ClickType.LEFT ? ClickType.RIGHT : ClickType.LEFT;
+                    data.clickType = data.clickType == BindClickType.LEFT ? BindClickType.RIGHT : BindClickType.LEFT;
                     break;
                 case "sneak":
                     data.requireSneak = !data.requireSneak;
