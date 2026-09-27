@@ -1,5 +1,5 @@
 name: Elevator
-version: 1.2
+version: 1.4
 main: com.MootComb.Elevator.Main
 api-version: 1.13
 description: Elevator and teleporter block plugin
@@ -8,7 +8,7 @@ author: MootComb
 commands:
   elevator:
     description: Main Elevator command
-    usage: /elevator <reload|info|list|remove>
+    usage: /elevator <reload|info|list|remove|view>
     permission: elevator.use
     aliases: []
 
@@ -17,7 +17,7 @@ permissions:
     description: Allows using elevators
     default: true
   elevator.teleport:
-    description: Allows using teleporters
+    description: Allows binding and using teleporters
     default: true
   elevator.manage:
     description: Allows managing teleporter blocks
@@ -31,6 +31,27 @@ permissions:
   elevator.bypass:
     description: Bypasses cooldown
     default: op
+  elevator.bypass.access:
+    description: Bypasses teleport access checks
+    default: op
+  elevator.bypass.distance:
+    description: Bypasses distance check between paired blocks
+    default: op
+  elevator.bypass.item:
+    description: Bypasses required item check
+    default: op
+  elevator.bypass.sneak:
+    description: Bypasses sneak requirement
+    default: op
   elevator.reload:
     description: Allows reloading config
     default: op
+  elevator.view.all:
+    description: Allows viewing all teleporter blocks
+    default: op
+  elevator.view.owner:
+    description: Allows viewing own teleporter blocks
+    default: true
+  elevator.view.member:
+    description: Allows viewing blocks where you are a member or owner
+    default: true
