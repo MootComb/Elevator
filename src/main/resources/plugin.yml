@@ -1,9 +1,9 @@
 name: Teleporter
-version: 2.0
+version: 1.6
 main: com.MootComb.Teleporter.Main
 api-version: 1.13
 author: MootComb
-description: Teleporter plugin with GUI management.
+description: Teleporter and elevator plugin with GUI management.
 commands:
   teleporter:
     description: Teleporter plugin main command.
@@ -81,3 +81,9 @@ permissions:
   teleporter.view.member:
     description: Allows viewing member/governing teleporter blocks.
     default: true
+  elevator.use:
+    description: Allows using elevator blocks.
+    default: true
+  elevator.bypass:
+    description: Bypasses elevator cooldown.
+    default: op
