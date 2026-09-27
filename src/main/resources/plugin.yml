@@ -8,9 +8,6 @@ commands:
   elevator:
     description: Elevator plugin main command.
     usage: /elevator <reload|info|list|remove|view|menu>
-    aliases:
-      - elev
-      - lift
 permissions:
   elevator.reload:
     description: Allows reloading the plugin config.
