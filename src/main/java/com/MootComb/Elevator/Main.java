@@ -60,7 +60,7 @@ public final class Main extends JavaPlugin implements Listener, TabCompleter {
 
     public enum MessageType { CHAT, TITLE, SUBTITLE, NONE }
     public enum AccessLevel { OWNER, MEMBERS, GOVERNINGS, ALL }
-    public enum ClickType { LEFT, RIGHT }
+    public enum BindClickType { LEFT, RIGHT }
     public enum TeleportLocation { TOP, CURRENT }
 
     private static final int DOUBLE_CLICK_DELAY_TICKS = 5;
@@ -1608,30 +1608,51 @@ public final class Main extends JavaPlugin implements Listener, TabCompleter {
         if (!(event.getWhoClicked() instanceof Player)) return;
         Player player = (Player) event.getWhoClicked();
         UUID uuid = player.getUniqueId();
+
         Inventory opened = openGuis.get(uuid);
         if (opened == null) return;
         if (event.getInventory() != opened) return;
+
         event.setCancelled(true);
+
         GuiContext ctx = guiContexts.get(uuid);
         if (ctx == null) return;
+
         BlockData data = blockDataMap.get(ctx.blockKey);
         if (data == null) {
             player.closeInventory();
             return;
         }
+
         int slot = event.getRawSlot();
         if (slot < 0 || slot >= event.getInventory().getSize()) return;
+
         Map<Integer, GuiItemMeta> slotMap = guiItemMetaMap.get(uuid);
         if (slotMap == null) return;
+
         GuiItemMeta meta = slotMap.get(slot);
         if (meta == null) return;
-        List<String> commands;
-        if (event.isShiftClick() && event.isLeftClick()) commands = meta.shiftLeftCommands;
-        else if (event.isShiftClick() && event.isRightClick()) commands = meta.shiftRightCommands;
-        else if (event.isLeftClick()) commands = meta.leftCommands;
-        else if (event.isRightClick()) commands = meta.rightCommands;
-        else commands = new ArrayList<>();
-        if (commands == null) return;
+
+        List<String> commands = new ArrayList<>();
+        org.bukkit.event.inventory.ClickType click = event.getClick();
+        switch (click) {
+            case LEFT:
+                commands = meta.leftCommands;
+                break;
+            case RIGHT:
+                commands = meta.rightCommands;
+                break;
+            case SHIFT_LEFT:
+                commands = !meta.shiftLeftCommands.isEmpty() ? meta.shiftLeftCommands : meta.leftCommands;
+                break;
+            case SHIFT_RIGHT:
+                commands = !meta.shiftRightCommands.isEmpty() ? meta.shiftRightCommands : meta.rightCommands;
+                break;
+            default:
+                break;
+        }
+
+        if (commands == null || commands.isEmpty()) return;
         for (String cmd : commands) {
             handleGuiCommand(player, data, cmd, meta, slot);
         }
