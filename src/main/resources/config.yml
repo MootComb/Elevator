@@ -1,5 +1,32 @@
 Debug: false
 
+Elevator:
+  BlockTypes:
+    - CARPET
+    - BLACK_CARPET
+    - BLUE_CARPET
+    - BROWN_CARPET
+    - CYAN_CARPET
+    - GRAY_CARPET
+    - GREEN_CARPET
+    - LIGHT_BLUE_CARPET
+    - LIGHT_GRAY_CARPET
+    - LIME_CARPET
+    - MAGENTA_CARPET
+    - ORANGE_CARPET
+    - PINK_CARPET
+    - PURPLE_CARPET
+    - RED_CARPET
+    - WHITE_CARPET
+    - YELLOW_CARPET
+  BlockDistance: 50
+  EnableParticle: false
+  ParticleType: SPELL_WITCH
+  ParticleCount: 20
+  UsageSound: entity.enderman.teleport
+  ActivateSound: entity.player.levelup
+  AllowUnsafe: true
+
 Teleporter:
   EnableParticle: false
   ParticleType: SPELL_WITCH
@@ -62,6 +89,10 @@ Features:
     Enabled: true
     Require: false
     Permission: "teleporter.naming"
+  Elevator:
+    Enabled: true
+    Require: false
+    Permission: "elevator.use"
 
 Restrictions:
   Cooldown:
@@ -243,6 +274,10 @@ Messages:
   BlockBoundType: CHAT
 
 Titles:
+  Elevator:
+    FadeIn: 10
+    Stay: 30
+    FadeOut: 10
   Teleporter:
     FadeIn: 10
     Stay: 30
@@ -269,6 +304,9 @@ BlockNaming:
   DefaultColor: "&f"
 
 DisabledWorlds:
+  Elevator:
+    - "world_nether"
+    - "world_the_end"
   Teleporter:
     - "world_nether"
     - "world_the_end"
