@@ -1,13 +1,22 @@
 # ============================================
 # ELEVATOR PLUGIN CONFIGURATION
 # ============================================
+# Documentation:
+#   - Messages support: &a-&f, &0-&9, &k-&r, &#RRGGBB, <#RRGGBB>
+#   - Type values: CHAT / TITLE / SUBTITLE / NONE
+#   - Access values: OWNER / MEMBERS / GOVERNINGS / ALL
+#   - Click values: LEFT / RIGHT
+#   - Location values: TOP / CURRENT
+# ============================================
 
+# Enable detailed debug logging to console
 Debug: false
 
 # ============================================
 # ELEVATOR SETTINGS
 # ============================================
 Elevator:
+  # Blocks that act as elevators (jump = up, sneak = down)
   BlockTypes:
     - CARPET
     - BLACK_CARPET
@@ -27,90 +36,130 @@ Elevator:
     - WHITE_CARPET
     - YELLOW_CARPET
 
+  # Maximum vertical search distance for the next elevator block
   BlockDistance: 50
+
+  # Particle effects when using the elevator
   EnableParticle: true
   ParticleType: SPELL_WITCH
   ParticleCount: 20
+
+  # Sounds when using / activating the elevator
   UsageSound: entity.enderman.teleport
   ActivateSound: entity.player.levelup
+
+  # Allow teleporting into unsafe locations (lava, fire, etc.)
   AllowUnsafe: true
 
 # ============================================
 # TELEPORTER SETTINGS
 # ============================================
 Teleporter:
+  # Particle effects when using the teleporter
   EnableParticle: true
+
+  # Sound when using the teleporter
   UsageSound: entity.enderman.teleport
+
+  # Allow teleporting into unsafe locations
   AllowUnsafe: true
+
+  # Allow teleporting between different worlds
   AllowCrossWorlds: true
+
+  # If true, ANY block can be bound with an Ender Pearl
+  # If false, only BlockTypes below (or BlockTypesPermission)
   AllowAllBlocks: false
+
+  # Permission that bypasses the BlockTypes list (empty = disabled)
   BlockTypesPermission: ""
 
+  # Blocks that can be bound as teleporters
   BlockTypes:
     - SEA_LANTERN
     - CRYING_OBSIDIAN
     - LIGHT_BLUE_GLAZED_TERRACOTTA
 
+  # Distance check between two paired blocks
   DistanceCheck:
     Enabled: true
     MaxDistance: 10000.0
 
+  # Block binding settings
   Bind:
+    # If true, the Ender Pearl is consumed on binding
     ConsumePearl: true
 
 # ============================================
 # COOLDOWN SETTINGS
 # ============================================
 Cooldown:
+  # Enable cooldown for elevator / teleporter usage
   EnableCooldown: false
+
+  # Cooldown time in seconds
   Time: 30
+
+  # Message type: CHAT / TITLE / SUBTITLE / NONE
   MessageType: SUBTITLE
+
+  # Cooldown message (%time% = seconds remaining)
   Locale: "&#FF5300Elevator &7| &fCooldown: %time%s"
 
 # ============================================
 # ELEVATOR MESSAGES
-# Type values: CHAT / TITLE / SUBTITLE / NONE
 # ============================================
 ElevatorLocale:
+  # Title timings (used for TITLE / SUBTITLE only)
   Title:
     FadeIn: 10
     Stay: 40
     FadeOut: 10
 
+  # Message when going up
   ElevatorUp: "&#FF5300Elevator &7| &fGoing up"
+  # Type: CHAT / TITLE / SUBTITLE / NONE
   ElevatorUpType: SUBTITLE
 
+  # Message when going down
   ElevatorDown: "&#FF5300Elevator &7| &fGoing down"
   ElevatorDownType: SUBTITLE
 
+  # Message when destination is unsafe
   ElevatorDanger: "&#FF5300Elevator &7| &fDanger! Unsafe location!"
   ElevatorDangerType: SUBTITLE
 
 # ============================================
 # TELEPORTER MESSAGES
-# Type values: CHAT / TITLE / SUBTITLE / NONE
 # ============================================
 TeleporterLocale:
+  # Title timings (used for TITLE / SUBTITLE only)
   Title:
     FadeIn: 10
     Stay: 60
     FadeOut: 10
 
+  # Message after successful teleport
   TeleportSuccess: "&#FF5300Elevator &7| &fTeleported!"
   TeleportSuccessType: SUBTITLE
 
+  # Message when a block is bound
   BlockBound: "&#FF5300Elevator &7| &fBlock bound! Set an ID to link it."
   BlockBoundType: CHAT
 
+  # Message when no paired block is found for the ID
   NoPair: "&#FF5300Elevator &7| &fNo paired block found."
   NoPairType: CHAT
 
+  # Message when cross-world teleport is disabled
   NoCrossWorld: "&#FF5300Elevator &7| &fCannot teleport across worlds."
   NoCrossWorldType: CHAT
 
+  # Message when the required item is missing
   MissingItem: "&#FF5300Elevator &7| &fYou are missing the required item."
   MissingItemType: CHAT
 
+  # Message when the destination is too far away
   DistanceTooFar: "&#FF5300Elevator &7| &fDestination is too far away."
   DistanceTooFarType: CHAT
 
@@ -118,8 +167,30 @@ TeleporterLocale:
 # GUI TEXTS
 # ============================================
 GUI:
+  # --------------------------------------------
+  # Main menu (block settings)
+  # --------------------------------------------
   Main:
+    # Inventory size (must be multiple of 9, 9..54)
+    Size: 54
     Title: "&7Teleporter Block"
+
+    # Slot positions for each item
+    Slot:
+      Id: 4
+      Click: 19
+      Sneak: 20
+      RequiredItem: 21
+      Location: 22
+      Name: 23
+      Hologram: 24
+      TeleportAccess: 29
+      ManageAccess: 30
+      BreakAccess: 31
+      Members: 32
+      Close: 49
+
+    # Text displayed on each GUI item
     IdItem: "&#FF5300ID: %id%"
     IdItemEmpty: "&#FF5300ID: Not set"
     IdItemLore: "&7Click to change ID"
@@ -136,32 +207,71 @@ GUI:
     LocationItemLoreClick: "&7Click to cycle"
     NameItem: "&#FF5300Name: %value%"
     NameItemEmpty: "&#FF5300Name: Not set"
-    NameItemLore: "&7Click to rename"
+    NameItemLore: "&7Click to rename (supports &f&7&#RRGGBB <#RRGGBB>)"
     HologramItem: "&#FF5300Hologram: %value%"
     HologramItemLore: "&7Toggle hologram above block"
-    HologramColorItem: "&#FF5300Hologram Color: %value%"
-    HologramColorItemLore: "&7Click to change color"
     TeleportAccessItem: "&#FF5300Teleport Access: %value%"
     TeleportAccessItemLore: "&7Click to cycle"
-    TeleportAccessItemLore2: "&7OWNER / MEMBERS / OWNERS / ALL"
+    TeleportAccessItemLore2: "&7OWNER / MEMBERS / GOVERNINGS / ALL"
     ManageAccessItem: "&#FF5300Manage Access: %value%"
     ManageAccessItemLore: "&7Click to cycle"
-    ManageAccessItemLore2: "&7OWNER / OWNERS / ALL"
+    ManageAccessItemLore2: "&7OWNER / GOVERNINGS / ALL"
     BreakAccessItem: "&#FF5300Break Access: %value%"
     BreakAccessItemLore: "&7Click to cycle"
-    BreakAccessItemLore2: "&7OWNER / MEMBERS / OWNERS / ALL"
-    MembersItem: "&#FF5300Members & Owners"
+    BreakAccessItemLore2: "&7OWNER / MEMBERS / GOVERNINGS / ALL"
+    MembersItem: "&#FF5300Members & Governings"
     MembersItemLore: "&7Manage local and global lists"
     CloseItem: "&#FF5300Close"
+
+  # --------------------------------------------
+  # Feature toggles for main menu
+  # Disable a feature to hide it from the GUI
+  # (the setting itself still works if changed in blocks.yml)
+  # --------------------------------------------
+  Features:
+    Id: true
+    Click: true
+    Sneak: true
+    RequiredItem: true
+    Location: true
+    Name: true
+    Hologram: true
+    TeleportAccess: true
+    ManageAccess: true
+    BreakAccess: true
+    Members: true
+
+  # --------------------------------------------
+  # Members & Governings menu
+  # --------------------------------------------
   Members:
-    Title: "&7Members & Owners"
+    Size: 54
+    Title: "&7Members & Governings"
+
+    Slot:
+      LocalMembers: 20
+      LocalGovernings: 21
+      GlobalMembers: 23
+      GlobalGovernings: 24
+      Back: 49
+
+    # Feature toggles
+    Features:
+      Local: true
+      Global: true
+
     LocalMembers: "&#FF5300Local Members: %count%"
-    LocalOwners: "&#FF5300Local Owners: %count%"
+    LocalGovernings: "&#FF5300Local Governings: %count%"
     GlobalMembers: "&#FF5300Global Members: %count%"
-    GlobalOwners: "&#FF5300Global Owners: %count%"
+    GlobalGovernings: "&#FF5300Global Governings: %count%"
     ClickManage: "&7Click to manage"
     Back: "&#FF5300Back"
+
+  # --------------------------------------------
+  # Player list view
+  # --------------------------------------------
   List:
+    Size: 54
     Title: "&7%list%"
     PlayerItem: "&#FF5300%name%"
     PlayerItemLore: "&7Click to remove"
@@ -191,16 +301,10 @@ Messages:
   ItemDisabledType: CHAT
   ItemSet: "&#FF5300Elevator &7| &fRequired item: %name%"
   ItemSetType: CHAT
-  NamePrompt: "&#FF5300Elevator &7| &fType a name for this block or 'cancel'."
+  NamePrompt: "&#FF5300Elevator &7| &fType a name (supports &f&7&#RRGGBB <#RRGGBB>) or 'cancel'."
   NamePromptType: CHAT
   NameSet: "&#FF5300Elevator &7| &fName set to: %name%"
   NameSetType: CHAT
-  ColorPrompt: "&#FF5300Elevator &7| &fType a HEX color (e.g. &#FF5300) or 'cancel'."
-  ColorPromptType: CHAT
-  ColorSet: "&#FF5300Elevator &7| &fColor set to: %color%"
-  ColorSetType: CHAT
-  ColorInvalid: "&#FF5300Elevator &7| &fInvalid HEX color. Use format &#RRGGBB"
-  ColorInvalidType: CHAT
   Cancelled: "&#FF5300Elevator &7| &fCancelled."
   CancelledType: CHAT
   NoPermission: "&#FF5300Elevator &7| &fNo permission."
@@ -250,11 +354,22 @@ Messages:
 # VIEW MODE
 # ============================================
 View:
+  # How long the view mode lasts (ticks, 20 = 1s)
   DurationTicks: 200
+
+  # How often particles are refreshed (ticks)
   UpdateEveryTicks: 5
+
+  # Max distance from the player to highlight blocks
   MaxDistance: 64
+
+  # Particle count per block
   ParticleCount: 3
+
+  # Particle type for highlights
   ParticleType: END_ROD
+
+  # Permissions for each view mode
   PermissionAll: "elevator.view.all"
   PermissionOwner: "elevator.view.owner"
   PermissionMember: "elevator.view.member"
@@ -263,27 +378,50 @@ View:
 # HOLOGRAMS
 # ============================================
 Holograms:
+  # Whether new blocks have hologram enabled by default
   DefaultEnabled: false
-  DefaultColor: "&#FF5300"
+
+  # Default color prefix for holograms (color codes)
+  DefaultColor: "&f"
+
+  # Max distance from which the hologram is visible
   ViewDistance: 16
+
+  # How often the holograms are refreshed (ticks)
   UpdateIntervalTicks: 20
-  ShowId: true
+
+  # Show ID in the hologram text
+  ShowId: false
+
+  # Show custom name in the hologram text
   ShowName: true
-  Format: "%name% &7| &fID: %id%"
-  FormatNoName: "&7ID: %id%"
+
+  # Format when name is set (%name% / %id%)
+  Format: "%name%"
+
+  # Format when name is empty
+  FormatNoName: ""
+
+  # Vertical offset above the block
   LineHeight: 0.3
 
 # ============================================
 # BLOCK NAMING
 # ============================================
 BlockNaming:
+  # Enable custom block names
   Enabled: true
-  MaxLength: 32
+
+  # Maximum length of a custom name
+  MaxLength: 64
+
+  # Default name for new blocks (empty = no name)
   DefaultName: ""
 
 # ============================================
 # DISABLED WORLDS
 # ============================================
+# Worlds where elevator and teleporter won't work
 DisabledWorlds:
   - "world_nether"
   - "world_the_end"
@@ -292,12 +430,17 @@ DisabledWorlds:
 # PERMISSIONS
 # ============================================
 Permissions:
+  # Master switch: if false, ALL permission checks are skipped
   CheckPermission: false
+
+  # Base permissions
   Use: "elevator.use"
   BypassCooldown: "elevator.bypass"
   Teleport: "elevator.teleport"
   Manage: "elevator.manage"
   BreakBypass: "elevator.break.bypass"
+
+  # Bypass permissions for fine-grained control
   Bypass:
     Access: "elevator.bypass.access"
     Distance: "elevator.bypass.distance"
@@ -306,7 +449,7 @@ Permissions:
 
 # ============================================
 # TELEPORTER BLOCK FEATURES
-# Access values: OWNER, MEMBERS, OWNERS, ALL
+# Access values: OWNER / MEMBERS / GOVERNINGS / ALL
 # ============================================
 TeleporterBlock:
   Teleport:
