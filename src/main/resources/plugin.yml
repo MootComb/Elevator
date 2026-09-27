@@ -2,56 +2,70 @@ name: Elevator
 version: 1.4
 main: com.MootComb.Elevator.Main
 api-version: 1.13
-description: Elevator and teleporter block plugin
 author: MootComb
-
+description: Elevator and teleporter plugin with GUI management.
 commands:
   elevator:
-    description: Main Elevator command
-    usage: /elevator <reload|info|list|remove|view>
-    permission: elevator.use
-    aliases: []
-
+    description: Elevator plugin main command.
+    usage: /elevator <reload|info|list|remove|view|menu>
+    aliases:
+      - elev
+      - lift
 permissions:
+  elevator.reload:
+    description: Allows reloading the plugin config.
+    default: op
   elevator.use:
-    description: Allows using elevators
+    description: Allows using elevator blocks.
     default: true
   elevator.teleport:
-    description: Allows binding and using teleporters
+    description: Allows using teleporter blocks.
     default: true
   elevator.manage:
-    description: Allows managing teleporter blocks
+    description: Allows managing teleporter blocks.
     default: true
   elevator.break:
-    description: Allows breaking teleporter blocks
+    description: Allows breaking teleporter blocks.
     default: true
-  elevator.break.bypass:
-    description: Bypasses break access checks
-    default: op
+  elevator.bind:
+    description: Allows binding new teleporter blocks.
+    default: true
+  elevator.password:
+    description: Allows setting passwords on teleporter blocks.
+    default: true
+  elevator.redirect:
+    description: Allows editing redirect chains.
+    default: true
+  elevator.hologram:
+    description: Allows toggling holograms.
+    default: true
+  elevator.naming:
+    description: Allows naming teleporter blocks.
+    default: true
   elevator.bypass:
-    description: Bypasses cooldown
+    description: Bypasses cooldown.
     default: op
   elevator.bypass.access:
-    description: Bypasses teleport access checks
+    description: Bypasses access level checks.
     default: op
   elevator.bypass.distance:
-    description: Bypasses distance check between paired blocks
+    description: Bypasses distance check.
+    default: op
+  elevator.bypass.crossworld:
+    description: Bypasses cross-world restriction.
     default: op
   elevator.bypass.item:
-    description: Bypasses required item check
+    description: Bypasses required item check.
     default: op
   elevator.bypass.sneak:
-    description: Bypasses sneak requirement
-    default: op
-  elevator.reload:
-    description: Allows reloading config
+    description: Bypasses sneak requirement.
     default: op
   elevator.view.all:
-    description: Allows viewing all teleporter blocks
+    description: Allows viewing all teleporter blocks.
     default: op
   elevator.view.owner:
-    description: Allows viewing own teleporter blocks
+    description: Allows viewing own teleporter blocks.
     default: true
   elevator.view.member:
-    description: Allows viewing blocks where you are a member or owner
+    description: Allows viewing member/governing teleporter blocks.
     default: true
