@@ -7,7 +7,7 @@ description: Teleporter plugin with GUI management.
 commands:
   teleporter:
     description: Teleporter plugin main command.
-    usage: /teleporter <reload|info|list|remove|view|menu>
+    usage: /teleporter <reload|info|list|remove|view|menu|tp>
 permissions:
   teleporter.reload:
     description: Allows reloading the plugin config.
@@ -38,6 +38,21 @@ permissions:
     default: true
   teleporter.naming:
     description: Allows naming teleporter blocks.
+    default: true
+  teleporter.tp:
+    description: Allows teleporting to a teleporter block by command.
+    default: op
+  teleporter.info:
+    description: Allows viewing teleporter block info.
+    default: true
+  teleporter.list:
+    description: Allows listing own teleporter blocks.
+    default: true
+  teleporter.remove:
+    description: Allows removing teleporter blocks by command.
+    default: op
+  teleporter.menu:
+    description: Allows opening the teleporter GUI by command.
     default: true
   teleporter.bypass:
     description: Bypasses cooldown.
