@@ -34,7 +34,7 @@ Teleporter:
   UsageSound: entity.enderman.teleport
   ActivateSound: entity.player.levelup
   AllowUnsafe: true
-  AllowAllBlocks: true
+  AllowAllBlocks: false
   BlockTypesPermission: ""
   BlockTypes:
     - SEA_LANTERN
@@ -320,118 +320,209 @@ GUI:
         id:
           material: ENDER_PEARL
           slot: 4
-          display_name: "&#FF5300ID: %id%"
+          display_name: ' '
           lore:
-            - "&fClick to change ID"
+            - ' &#FF5300ID '
+            - ' '
+            - ' &fCurrent ID: &7%id% '
+            - ' '
+            - ' &fClick to change ID '
+            - ' '
           left_click_commands:
             - "[teleporter_input] SET_ID"
+
         click_type:
           material: LEVER
           slot: 19
-          display_name: "&#FF5300Click Type: %click%"
+          display_name: ' '
           lore:
-            - "&fLeft or Right mouse button"
+            - ' &#FF5300Click Type '
+            - ' '
+            - ' &fCurrent: &7%click% '
+            - ' '
+            - ' &fLeft or Right mouse button '
+            - ' '
           left_click_commands:
             - "[teleporter_toggle] click"
+
         sneak:
           material: SHIELD
           slot: 20
-          display_name: "&#FF5300Require Sneak: %sneak%"
+          display_name: ' '
           lore:
-            - "&fToggle sneak requirement"
+            - ' &#FF5300Require Sneak '
+            - ' '
+            - ' &fCurrent: &7%sneak% '
+            - ' '
+            - ' &fRequire shift to use '
+            - ' '
           left_click_commands:
             - "[teleporter_toggle] sneak"
+
         required_item:
           material: NAME_TAG
           slot: 21
-          display_name: "&#FF5300Require Item: %item%"
+          display_name: ' '
           lore:
-            - "&fRequired: %value%"
-            - "&fClick to change"
+            - ' &#FF5300Required Item '
+            - ' '
+            - ' &fItem: &7%value% '
+            - ' '
+            - ' &fClick to change '
+            - ' '
           left_click_commands:
             - "[teleporter_input] SET_ITEM"
+
         location:
           material: ENDER_EYE
           slot: 22
-          display_name: "&#FF5300Teleport Location: %location%"
+          display_name: ' '
           lore:
-            - "&fTOP or CURRENT"
-            - "&fClick to cycle"
+            - ' &#FF5300Teleport Location '
+            - ' '
+            - ' &fMode: &7%location% '
+            - ' '
+            - ' &fTOP - top of the block '
+            - ' &fCURRENT - current position '
+            - ' '
+            - ' &fClick to cycle '
+            - ' '
           left_click_commands:
             - "[teleporter_toggle] location"
+
         name:
           material: BOOK
           slot: 23
-          display_name: "&#FF5300Name: %blockname%"
+          display_name: ' '
           lore:
-            - "&fClick to rename"
+            - ' &#FF5300Name '
+            - ' '
+            - ' &fName: &7%blockname% '
+            - ' '
+            - ' &fClick to rename '
+            - ' '
           left_click_commands:
             - "[teleporter_input] SET_NAME"
+
         hologram:
           material: ARMOR_STAND
           slot: 24
-          display_name: "&#FF5300Hologram: %hologram%"
+          display_name: ' '
           lore:
-            - "&fToggle hologram above block"
+            - ' &#FF5300Hologram '
+            - ' '
+            - ' &fCurrent: &7%hologram% '
+            - ' '
+            - ' &fShow hologram above the block '
+            - ' '
           left_click_commands:
             - "[teleporter_toggle] hologram"
+
         redirect:
           material: COMPASS
           slot: 25
-          display_name: "&#FF5300Redirect: %redirect%"
+          display_name: ' '
           lore:
-            - "&fClick to open chain editor"
+            - ' &#FF5300Redirect '
+            - ' '
+            - ' &fCurrent: &7%redirect% '
+            - ' '
+            - ' &fClick to open chain editor '
+            - ' '
           left_click_commands:
             - "[opengui] redirect"
-        close:
-          material: BARRIER
-          slot: 49
-          display_name: "&#FF5300Close"
-          left_click_commands:
-            - "[close]"
+
         teleport_access:
           material: CHEST
           slot: 29
-          display_name: "&#FF5300Teleport Access: %teleport_access%"
+          display_name: ' '
           lore:
-            - "&fClick to cycle"
-            - "&fOWNER / MEMBERS / GOVERNINGS / ALL"
+            - ' &#FF5300Teleport Access '
+            - ' '
+            - ' &fCurrent: &7%teleport_access% '
+            - ' '
+            - ' &fOWNER / MEMBERS '
+            - ' &fGOVERNINGS / ALL '
+            - ' '
+            - ' &fClick to cycle '
+            - ' '
           left_click_commands:
             - "[teleporter_toggle] teleport_access"
+
         manage_access:
           material: COMMAND_BLOCK
           slot: 30
-          display_name: "&#FF5300Manage Access: %manage_access%"
+          display_name: ' '
           lore:
-            - "&fClick to cycle"
-            - "&fOWNER / MEMBERS / GOVERNINGS / ALL"
+            - ' &#FF5300Manage Access '
+            - ' '
+            - ' &fCurrent: &7%manage_access% '
+            - ' '
+            - ' &fOWNER / MEMBERS '
+            - ' &fGOVERNINGS / ALL '
+            - ' '
+            - ' &fClick to cycle '
+            - ' '
           left_click_commands:
             - "[teleporter_toggle] manage_access"
-        break_access:
-          material: DIAMOND_PICKAXE
-          slot: 32
-          display_name: "&#FF5300Break Access: %break_access%"
-          lore:
-            - "&fClick to cycle"
-            - "&fOWNER / MEMBERS / GOVERNINGS / ALL"
-          left_click_commands:
-            - "[teleporter_toggle] break_access"
+
         members:
           material: PLAYER_HEAD
           slot: 31
-          display_name: "&#FF5300Members & Governings"
+          display_name: ' '
           lore:
-            - "&fManage local and global lists"
+            - ' &#FF5300Members & Governings '
+            - ' '
+            - ' &fManage local and global lists '
+            - ' '
+            - ' &fClick to open '
+            - ' '
           left_click_commands:
             - "[opengui] members"
+
+        break_access:
+          material: DIAMOND_PICKAXE
+          slot: 32
+          display_name: ' '
+          hide_attributes: true
+          lore:
+            - ' &#FF5300Break Access '
+            - ' '
+            - ' &fCurrent: &7%break_access% '
+            - ' '
+            - ' &fOWNER / MEMBERS '
+            - ' &fGOVERNINGS / ALL '
+            - ' '
+            - ' &fClick to cycle '
+            - ' '
+          left_click_commands:
+            - "[teleporter_toggle] break_access"
+
         password:
           material: TRIPWIRE_HOOK
           slot: 33
-          display_name: "&#FF5300Password: %password%"
+          display_name: ' '
           lore:
-            - "&fClick to set / disable"
+            - ' &#FF5300Password '
+            - ' '
+            - ' &fCurrent: &7%password% '
+            - ' '
+            - ' &fClick to set or disable '
+            - ' '
           left_click_commands:
             - "[teleporter_input] SET_PASSWORD"
+
+        close:
+          material: BARRIER
+          slot: 49
+          display_name: ' '
+          lore:
+            - ' &#FF5300Close '
+            - ' '
+            - ' &fClose this menu '
+            - ' '
+          left_click_commands:
+            - "[close]"
 
     members:
       title: "&8Members & Governings"
@@ -440,39 +531,68 @@ GUI:
         local_members:
           material: PLAYER_HEAD
           slot: 20
-          display_name: "&#FF5300Local Members: %count%"
+          display_name: ' '
           lore:
-            - "&fClick to manage"
+            - ' &#FF5300Local Members '
+            - ' '
+            - ' &fAmount: &7%count% '
+            - ' '
+            - ' &fClick to manage '
+            - ' '
           left_click_commands:
             - "[opengui_list] LOCAL_MEMBERS"
+
         local_governings:
           material: PLAYER_HEAD
           slot: 21
-          display_name: "&#FF5300Local Governings: %count%"
+          display_name: ' '
           lore:
-            - "&fClick to manage"
+            - ' &#FF5300Local Governings '
+            - ' '
+            - ' &fAmount: &7%count% '
+            - ' '
+            - ' &fClick to manage '
+            - ' '
           left_click_commands:
             - "[opengui_list] LOCAL_GOVERNINGS"
+
         global_members:
           material: PLAYER_HEAD
           slot: 23
-          display_name: "&#FF5300Global Members: %count%"
+          display_name: ' '
           lore:
-            - "&fClick to manage"
+            - ' &#FF5300Global Members '
+            - ' '
+            - ' &fAmount: &7%count% '
+            - ' '
+            - ' &fClick to manage '
+            - ' '
           left_click_commands:
             - "[opengui_list] GLOBAL_MEMBERS"
+
         global_governings:
           material: PLAYER_HEAD
           slot: 24
-          display_name: "&#FF5300Global Governings: %count%"
+          display_name: ' '
           lore:
-            - "&fClick to manage"
+            - ' &#FF5300Global Governings '
+            - ' '
+            - ' &fAmount: &7%count% '
+            - ' '
+            - ' &fClick to manage '
+            - ' '
           left_click_commands:
             - "[opengui_list] GLOBAL_GOVERNINGS"
+
         back:
           material: ARROW
           slot: 49
-          display_name: "&#FF5300Back"
+          display_name: ' '
+          lore:
+            - ' &#FF5300Back '
+            - ' '
+            - ' &fReturn to main menu '
+            - ' '
           left_click_commands:
             - "[opengui] main"
 
@@ -482,9 +602,14 @@ GUI:
       dynamic:
         player_entry:
           material: PLAYER_HEAD
-          display_name: "&#FF5300%name%"
+          display_name: ' '
           lore:
-            - "&fClick to remove"
+            - ' &#FF5300%name% '
+            - ' '
+            - ' &fPlayer: &7%name% '
+            - ' '
+            - ' &fClick to remove '
+            - ' '
           left_click_commands:
             - "[teleporter_list_remove] %uuid%"
         slots:
@@ -494,29 +619,50 @@ GUI:
         previous:
           material: ARROW
           slot: 45
-          display_name: "&#FF5300Previous"
+          display_name: ' '
+          lore:
+            - ' &#FF5300Previous '
+            - ' '
+            - ' &fGo back '
+            - ' '
           left_click_commands:
             - "[teleporter_page] previous"
+
         next:
           material: ARROW
           slot: 53
-          display_name: "&#FF5300Next"
+          display_name: ' '
+          lore:
+            - ' &#FF5300Next '
+            - ' '
+            - ' &fGo forward '
+            - ' '
           left_click_commands:
             - "[teleporter_page] next"
-        back:
-          material: ARROW
-          slot: 49
-          display_name: "&#FF5300Back"
-          left_click_commands:
-            - "[opengui] members"
+
         add:
           material: EMERALD
           slot: 48
-          display_name: "&#FF5300Add player"
+          display_name: ' '
           lore:
-            - "&fClick to add a player by name"
+            - ' &#FF5300Add Player '
+            - ' '
+            - ' &fClick to add a player by name '
+            - ' '
           left_click_commands:
             - "[teleporter_input] ADD_PLAYER"
+
+        back:
+          material: ARROW
+          slot: 49
+          display_name: ' '
+          lore:
+            - ' &#FF5300Back '
+            - ' '
+            - ' &fReturn to members menu '
+            - ' '
+          left_click_commands:
+            - "[opengui] members"
 
     redirect:
       title: "&8Redirect Chain"
@@ -525,39 +671,64 @@ GUI:
         toggle:
           material: LEVER
           slot: 4
-          display_name: "&#FF5300Redirect: %redirect%"
+          display_name: ' '
           lore:
-            - "&fToggle redirect mode"
+            - ' &#FF5300Redirect '
+            - ' '
+            - ' &fCurrent: &7%redirect% '
+            - ' '
+            - ' &fToggle redirect mode '
+            - ' '
           left_click_commands:
             - "[teleporter_toggle] redirect"
+
         add:
           material: EMERALD
           slot: 45
-          display_name: "&#FF5300Add ID"
+          display_name: ' '
           lore:
-            - "&fClick to add an ID to the chain"
+            - ' &#FF5300Add ID '
+            - ' '
+            - ' &fClick to add an ID to the chain '
+            - ' '
           left_click_commands:
             - "[teleporter_input] ADD_STEP"
+
         clear:
           material: LAVA_BUCKET
           slot: 48
-          display_name: "&#FF5300Clear chain"
+          display_name: ' '
           lore:
-            - "&fClick to remove all IDs"
+            - ' &#FF5300Clear Chain '
+            - ' '
+            - ' &fRemove all IDs from the chain '
+            - ' '
           left_click_commands:
             - "[teleporter_input] CLEAR_STEPS"
+
         back:
           material: ARROW
           slot: 49
-          display_name: "&#FF5300Back"
+          display_name: ' '
+          lore:
+            - ' &#FF5300Back '
+            - ' '
+            - ' &fReturn to main menu '
+            - ' '
           left_click_commands:
             - "[opengui] main"
       dynamic:
         step_entry:
           material: PAPER
-          display_name: "&#FF5300Step %index%: ID %id%"
+          display_name: ' '
           lore:
-            - "&fClick to remove"
+            - ' &#FF5300Step %index%: ID %id% '
+            - ' '
+            - ' &fOrder: &7%index% '
+            - ' &fID: &7%id% '
+            - ' '
+            - ' &fClick to remove '
+            - ' '
           left_click_commands:
             - "[teleporter_redirect_remove] %index%"
         slots:
