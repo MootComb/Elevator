@@ -33,6 +33,7 @@ import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerToggleSneakEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -1496,7 +1497,8 @@ public final class Main extends JavaPlugin implements Listener, TabCompleter {
                 List<String> loreList = itemSec.getStringList("lore");
                 List<String> loreOut = new ArrayList<>();
                 for (String l : loreList) loreOut.add(replacePlaceholders(l, player, data, listType, null, 0, page));
-                ItemStack stack = createItem(mat, display, loreOut);
+                boolean hideAttr = itemSec.getBoolean("hide_attributes", false);
+                ItemStack stack = createItem(mat, display, loreOut, hideAttr);
                 inv.setItem(slot, stack);
                 GuiItemMeta meta = new GuiItemMeta();
                 meta.itemKey = itemKey;
@@ -1543,7 +1545,8 @@ public final class Main extends JavaPlugin implements Listener, TabCompleter {
                         List<String> loreList = entry.getStringList("lore");
                         List<String> loreOut = new ArrayList<>();
                         for (String l : loreList) loreOut.add(replacePlaceholders(l, player, data, listType, name, i, page));
-                        inv.setItem(s, createItem(mat, dn, loreOut));
+                        boolean hideAttrEntry = entry.getBoolean("hide_attributes", false);
+                        inv.setItem(s, createItem(mat, dn, loreOut, hideAttrEntry));
                         GuiItemMeta meta = new GuiItemMeta();
                         meta.itemKey = "player_entry";
                         meta.menuName = menuName;
@@ -1579,7 +1582,8 @@ public final class Main extends JavaPlugin implements Listener, TabCompleter {
                         List<String> loreList = entry.getStringList("lore");
                         List<String> loreOut = new ArrayList<>();
                         for (String l : loreList) loreOut.add(replacePlaceholders(l, player, data, listType, null, i, page));
-                        inv.setItem(s, createItem(mat, dn, loreOut));
+                        boolean hideAttrStep = entry.getBoolean("hide_attributes", false);
+                        inv.setItem(s, createItem(mat, dn, loreOut, hideAttrStep));
                         GuiItemMeta meta = new GuiItemMeta();
                         meta.itemKey = "step_entry";
                         meta.menuName = menuName;
@@ -1669,6 +1673,10 @@ public final class Main extends JavaPlugin implements Listener, TabCompleter {
     }
 
     private ItemStack createItem(Material mat, String name, List<String> lore) {
+        return createItem(mat, name, lore, false);
+    }
+
+    private ItemStack createItem(Material mat, String name, List<String> lore, boolean hideAttributes) {
         ItemStack item = new ItemStack(mat);
         ItemMeta meta = item.getItemMeta();
         if (meta != null) {
@@ -1677,6 +1685,9 @@ public final class Main extends JavaPlugin implements Listener, TabCompleter {
                 List<String> loreList = new ArrayList<>();
                 for (String l : lore) loreList.add(color(l));
                 meta.setLore(loreList);
+            }
+            if (hideAttributes) {
+                meta.addItemFlags(org.bukkit.inventory.ItemFlag.HIDE_ATTRIBUTES);
             }
             item.setItemMeta(meta);
         }
