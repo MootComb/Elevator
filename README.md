@@ -1,4 +1,4 @@
-# Teleporter
+<h1 align="center">Teleporter</h1>
 
 <p align="center">
   <img src="https://img.shields.io/badge/Minecraft-1.13%2B-brightgreen" alt="Minecraft Version">
