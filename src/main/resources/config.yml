@@ -286,7 +286,7 @@ Messages:
   ItemDisabledType: CHAT
   ItemSet: "&fRequired item: %name%"
   ItemSetType: CHAT
-  NamePrompt: "&fType a name or 'cancel'."
+  NamePrompt: "&fType a name, 'no' to remove, or 'cancel'."
   NamePromptType: CHAT
   NameSet: "&fName set to: %name%"
   NameSetType: CHAT
