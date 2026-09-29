@@ -991,7 +991,7 @@ public final class Main extends JavaPlugin implements Listener, TabCompleter {
         for (int i = 1; i <= blockDistance; i++) {
             Location checkLoc = feetLocation.clone().subtract(0, i, 0);
             if (elevatorBlocks.contains(checkLoc.getBlock().getType())) {
-                Location targetLoc = checkLoc.clone().subtract(0, 0.65, 0);
+                Location targetLoc = checkLoc.clone();
                 if (!isSafeLocation(targetLoc, false)) {
                     sendElevatorPrefixed(player, msgElevatorDanger, msgElevatorDangerType);
                     return;
@@ -1014,7 +1014,7 @@ public final class Main extends JavaPlugin implements Listener, TabCompleter {
         for (int i = 1; i <= blockDistance; i++) {
             Location checkLoc = feetLocation.clone().add(0, i, 0);
             if (elevatorBlocks.contains(checkLoc.getBlock().getType())) {
-                Location targetLoc = checkLoc.clone().subtract(0, 0.65, 0);
+                Location targetLoc = checkLoc.clone();
                 if (!isSafeLocation(targetLoc, false)) {
                     sendElevatorPrefixed(player, msgElevatorDanger, msgElevatorDangerType);
                     return;
