@@ -2191,10 +2191,7 @@ public final class Main extends JavaPlugin implements Listener, TabCompleter {
                     sendTeleporterPrefixed(player, msgNoPermission, msgNoPermissionType);
                     return;
                 }
-                if (message.equalsIgnoreCase("null")
-                        || message.equalsIgnoreCase("no")
-                        || message.equalsIgnoreCase("none")
-                        || message.equalsIgnoreCase("off")) {
+                if (message.equalsIgnoreCase("no") || message.equalsIgnoreCase("not")) {
                     data.customName = "";
                     saveBlocks();
                     removeHologram(data);
