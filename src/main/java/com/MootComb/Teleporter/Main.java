@@ -1161,14 +1161,13 @@ public final class Main extends JavaPlugin implements Listener, TabCompleter {
             return;
         }
 
-        // Determine which click opens the GUI:
-        // - GUI button is the opposite of teleport clickType
-        // - GUI sneak is inverted if requireSneak is true
-        BindClickType guiClick = data.clickType == BindClickType.RIGHT ? BindClickType.LEFT : BindClickType.RIGHT;
-        boolean guiButton = (guiClick == BindClickType.RIGHT && isRight) || (guiClick == BindClickType.LEFT && isLeft);
+        // GUI opens ONLY with RIGHT click, but the sneak requirement is inverted
+        // relative to the teleport action:
+        // - requireSneak = true  -> GUI opens WITHOUT sneak, teleport WITH sneak
+        // - requireSneak = false -> GUI opens WITH sneak,    teleport WITHOUT sneak
         boolean guiSneak = data.requireSneak ? !player.isSneaking() : player.isSneaking();
 
-        if (guiButton && guiSneak) {
+        if (isRight && guiSneak) {
             event.setCancelled(true);
             if (!featureAllowed(player, "Manage")) {
                 sendTeleporterPrefixed(player, msgNoPermission, msgNoPermissionType);
