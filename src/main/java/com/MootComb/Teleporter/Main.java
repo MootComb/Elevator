@@ -2191,6 +2191,17 @@ public final class Main extends JavaPlugin implements Listener, TabCompleter {
                     sendTeleporterPrefixed(player, msgNoPermission, msgNoPermissionType);
                     return;
                 }
+                if (message.equalsIgnoreCase("null")
+                        || message.equalsIgnoreCase("no")
+                        || message.equalsIgnoreCase("none")
+                        || message.equalsIgnoreCase("off")) {
+                    data.customName = "";
+                    saveBlocks();
+                    removeHologram(data);
+                    sendTeleporterPrefixed(player, msgNameSet.replace("%name%", "-"), msgNameSetType);
+                    openGui(player, data, "main");
+                    return;
+                }
                 String name = message.length() > blockNamingMaxLength ? message.substring(0, blockNamingMaxLength) : message;
                 if (!name.startsWith("&") && !name.startsWith("&#") && !name.startsWith("<#") && !name.startsWith("§")) {
                     name = blockNamingDefaultColor + name;
