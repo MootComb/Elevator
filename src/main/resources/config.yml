@@ -1,6 +1,15 @@
+# ============================================================
+#  Debug
+# ============================================================
+# Enable verbose logging to console.
 Debug: false
 
+# ============================================================
+#  Elevator
+# ============================================================
+# Elevator = jump up / sneak down on matching blocks.
 Elevator:
+  # Blocks that act as elevator platforms.
   BlockTypes:
     - CARPET
     - BLACK_CARPET
@@ -19,32 +28,50 @@ Elevator:
     - RED_CARPET
     - WHITE_CARPET
     - YELLOW_CARPET
-  BlockDistance: 50
+  # Max vertical distance to search for the next elevator block.
+  BlockDistance: 100
+  # Particles on elevator use.
   EnableParticle: false
   ParticleType: SPELL_WITCH
   ParticleCount: 20
+  # Sounds on elevator use / activation.
   UsageSound: entity.enderman.teleport
   ActivateSound: entity.player.levelup
+  # Allow teleporting to unsafe locations (lava, fire, etc).
   AllowUnsafe: true
 
+# ============================================================
+#  Teleporter
+# ============================================================
+# Teleporter = paired blocks bound with an ID.
 Teleporter:
+  # Particles on teleport.
   EnableParticle: false
   ParticleType: SPELL_WITCH
   ParticleCount: 20
+  # Sounds on teleport / bind.
   UsageSound: entity.enderman.teleport
   ActivateSound: entity.player.levelup
+  # Allow teleporting to unsafe locations (lava, fire, etc).
   AllowUnsafe: true
+  # If true, any block can be bound as a teleporter.
+  # If false, only BlockTypes below (or with BlockTypesPermission) can be bound.
   AllowAllBlocks: false
+  # Optional permission that allows binding any block (overrides BlockTypes).
   BlockTypesPermission: ""
+  # Allowed block types when AllowAllBlocks: false.
   BlockTypes:
     - SEA_LANTERN
     - CRYING_OBSIDIAN
     - LIGHT_BLUE_GLAZED_TERRACOTTA
+  # Items used to bind a block as a teleporter (sneak + right-click).
   Bind:
     Items:
       ENDER_PEARL:
+        # Consume the item on bind.
         Consume: true
         ConsumeAmount: 1
+        # If Require: true, the player must have Permission to use this item.
         Require: false
         Permission: "teleporter.bind.pearl"
       EYE_OF_ENDER:
@@ -53,48 +80,104 @@ Teleporter:
         Require: false
         Permission: "teleporter.bind.eye"
 
-Features:
-  Teleport:
-    Enabled: true
-    Require: false
-    Permission: "teleporter.teleport"
-    DefaultAccess: "ALL"
-  Manage:
-    Enabled: true
-    Require: false
-    Permission: "teleporter.manage"
-    DefaultAccess: "OWNER"
-  Break:
-    Enabled: true
-    Require: false
-    Permission: "teleporter.break"
-    DefaultAccess: "ALL"
-  Bind:
-    Enabled: true
-    Require: false
-    Permission: "teleporter.bind"
-  Password:
-    Enabled: true
-    Require: false
-    Permission: "teleporter.password"
-  Redirect:
-    Enabled: true
-    Require: false
-    Permission: "teleporter.redirect"
-  Hologram:
-    Enabled: true
-    Require: false
-    Permission: "teleporter.hologram"
-  Naming:
-    Enabled: true
-    Require: false
-    Permission: "teleporter.naming"
+# ============================================================
+#  Usage
+# ============================================================
+# Controls whether a player can USE a block type at all
+# (elevator / teleporter). If disabled or permission missing,
+# the block does nothing for that player.
+Usage:
   Elevator:
     Enabled: true
     Require: false
     Permission: "elevator.use"
 
+  Teleport:
+    Enabled: true
+    Require: false
+    Permission: "teleporter.teleport"
+
+# ============================================================
+#  Features
+# ============================================================
+# Controls whether a player can MANAGE a specific category
+# inside the block GUI. Disabling a feature hides/blocks its
+# toggle button in the menu.
+Features:
+  ClickType:
+    Enabled: true
+    Require: false
+    Permission: "teleporter.features.clicktype"
+
+  # If requireSneak is true, teleport happens with SHIFT and GUI opens WITHOUT shift.
+  # If requireSneak is false, teleport happens WITHOUT shift and GUI opens WITH shift.
+  RequireSneak:
+    Enabled: true
+    Require: false
+    Permission: "teleporter.features.sneak"
+
+  # Required item category (set required item to use the teleporter).
+  Bind:
+    Enabled: true
+    Require: false
+    Permission: "teleporter.features.bind"
+
+  TeleportLocation:
+    Enabled: true
+    Require: false
+    Permission: "teleporter.features.teleportlocation"
+
+  Naming:
+    Enabled: true
+    Require: false
+    Permission: "teleporter.features.naming"
+
+  Hologram:
+    Enabled: true
+    Require: false
+    Permission: "teleporter.features.hologram"
+
+  Redirect:
+    Enabled: true
+    Require: false
+    Permission: "teleporter.features.redirect"
+
+  # Default access level for newly bound blocks.
+  # Values: OWNER / MEMBERS / GOVERNINGS / ALL
+  TeleportAccess:
+    Enabled: true
+    Require: false
+    Permission: "teleporter.features.teleportaccess"
+    DefaultAccess: "ALL"
+
+  ManageAccess:
+    Enabled: true
+    Require: false
+    Permission: "teleporter.features.manage"
+    DefaultAccess: "OWNER"
+
+  # Allow adding/removing members and governings in the GUI.
+  PeopleUse:
+    Enabled: true
+    Require: false
+    Permission: "teleporter.features.peopleuse"
+
+  BreakAccess:
+    Enabled: true
+    Require: false
+    Permission: "teleporter.features.break"
+    DefaultAccess: "ALL"
+
+  Password:
+    Enabled: true
+    Require: false
+    Permission: "teleporter.features.password"
+
+# ============================================================
+#  Restrictions
+# ============================================================
 Restrictions:
+  # Cooldown between teleports.
   Cooldown:
     Enabled: false
     Time: 30
@@ -103,27 +186,37 @@ Restrictions:
     Exempt:
       Require: true
       Permission: "teleporter.bypass"
+
+  # Enforce access level checks.
   Access:
     Enabled: true
     Exempt:
       Require: true
       Permission: "teleporter.bypass.access"
+
+  # Enforce required item checks.
   Item:
     Enabled: true
     Exempt:
       Require: true
       Permission: "teleporter.bypass.item"
+
+  # Enforce sneak requirement.
   Sneak:
     Enabled: true
     Exempt:
       Require: true
       Permission: "teleporter.bypass.sneak"
+
+  # Max distance between source and destination.
   Distance:
     Enabled: true
     MaxDistance: 10000.0
     Exempt:
       Require: true
       Permission: "teleporter.bypass.distance"
+
+  # Cross-world teleport restriction.
   CrossWorld:
     Enabled: true
     Allow: true
@@ -131,6 +224,9 @@ Restrictions:
       Require: true
       Permission: "teleporter.bypass.crossworld"
 
+# ============================================================
+#  Commands
+# ============================================================
 Commands:
   Info:
     Enabled: true
@@ -168,6 +264,10 @@ Commands:
       Require: false
       Permission: "teleporter.view.member"
 
+# ============================================================
+#  Messages
+# ============================================================
+# Type can be: CHAT, TITLE, SUBTITLE, NONE.
 Messages:
   Prefix: "&#FF5300Teleporter &7| &f"
   IdPrompt: "&fType a number (1-99999) or 'cancel'."
@@ -272,7 +372,12 @@ Messages:
   DistanceTooFarType: CHAT
   BlockBound: "&fBlock bound! Set an ID to link it."
   BlockBoundType: CHAT
+  FeatureDisabled: "&fThis feature is disabled."
+  FeatureDisabledType: CHAT
 
+# ============================================================
+#  Titles
+# ============================================================
 Titles:
   Elevator:
     FadeIn: 10
@@ -283,6 +388,9 @@ Titles:
     Stay: 30
     FadeOut: 10
 
+# ============================================================
+#  View Mode
+# ============================================================
 View:
   DurationTicks: 200
   UpdateEveryTicks: 5
@@ -290,6 +398,9 @@ View:
   ParticleCount: 3
   ParticleType: END_ROD
 
+# ============================================================
+#  Holograms
+# ============================================================
 Holograms:
   DefaultEnabled: false
   DefaultColor: "&f"
@@ -297,12 +408,18 @@ Holograms:
   UpdateIntervalTicks: 20
   LineHeight: 0.3
 
+# ============================================================
+#  Block Naming
+# ============================================================
 BlockNaming:
   Enabled: true
   MaxLength: 64
   DefaultName: ""
   DefaultColor: "&f"
 
+# ============================================================
+#  Disabled Worlds
+# ============================================================
 DisabledWorlds:
   Elevator:
     - "world_nether"
@@ -311,6 +428,9 @@ DisabledWorlds:
     - "world_nether"
     - "world_the_end"
 
+# ============================================================
+#  GUI
+# ============================================================
 GUI:
   Menus:
     main:
