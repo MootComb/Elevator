@@ -636,10 +636,15 @@ public final class Main extends JavaPlugin implements Listener, TabCompleter {
         return perm.isEmpty() || player.hasPermission(perm);
     }
 
+    // Feature flag: controls ONLY the GUI editing capability.
+    // It must NOT be used to disable gameplay mechanics.
     private boolean featureEnabled(String feature) {
         return getConfig().getBoolean("Features." + feature + ".Enabled", true);
     }
 
+    // Feature allowed: used ONLY by GUI code (hide button / block toggle).
+    // If the feature is disabled OR the player lacks the permission, the GUI
+    // editor for this category is unavailable. Gameplay is NOT affected.
     private boolean featureAllowed(Player player, String feature) {
         if (!featureEnabled(feature)) return false;
         if (!getConfig().getBoolean("Features." + feature + ".Require", false)) return true;
@@ -647,6 +652,9 @@ public final class Main extends JavaPlugin implements Listener, TabCompleter {
         return perm.isEmpty() || player.hasPermission(perm);
     }
 
+    // Default access level for newly bound blocks.
+    // Applied only when creating a new block in tryBindBlock().
+    // Independent from Enabled flag - if DefaultAccess is set, it is used.
     private AccessLevel featureDefaultAccess(String feature, AccessLevel fallback) {
         String val = getConfig().getString("Features." + feature + ".DefaultAccess");
         if (val == null) return fallback;
@@ -1085,7 +1093,8 @@ public final class Main extends JavaPlugin implements Listener, TabCompleter {
     private boolean canBindBlock(Player player, Block block, Material blockType, ItemStack hand) {
         if (!player.isSneaking()) return false;
         if (isInDisabledWorld(player, true)) return false;
-        if (!featureAllowed(player, "Bind")) return false;
+        // NOTE: Features.Bind controls ONLY the GUI editor.
+        // Binding new blocks is a gameplay mechanic and is not gated by it.
         BindItem bindItem = getBindItem(hand);
         if (bindItem == null) return false;
         if (!bindItemAllowed(player, bindItem)) return false;
@@ -1169,10 +1178,6 @@ public final class Main extends JavaPlugin implements Listener, TabCompleter {
 
         if (isRight && guiSneak) {
             event.setCancelled(true);
-            if (!featureAllowed(player, "Manage")) {
-                sendTeleporterPrefixed(player, msgNoPermission, msgNoPermissionType);
-                return;
-            }
             if (!canManage(player, data)) {
                 sendTeleporterPrefixed(player, msgNoPermission, msgNoPermissionType);
                 return;
@@ -1221,7 +1226,8 @@ public final class Main extends JavaPlugin implements Listener, TabCompleter {
 
         event.setCancelled(true);
 
-        if (data.passwordEnabled && !data.password.isEmpty() && featureEnabled("Password")) {
+        // Password check: gameplay mechanic, independent from Features.Password.
+        if (data.passwordEnabled && !data.password.isEmpty()) {
             pendingPasswords.put(player.getUniqueId(), new PendingPassword(data.key()));
             sendTeleporterPrefixed(player, msgPasswordRequired, msgPasswordRequiredType);
             return;
@@ -1269,12 +1275,14 @@ public final class Main extends JavaPlugin implements Listener, TabCompleter {
         data.y = block.getY();
         data.z = block.getZ();
         data.clickType = BindClickType.RIGHT;
+        // DefaultAccess is applied here regardless of Features.*.Enabled.
         data.teleportAccess = featureDefaultAccess("TeleportAccess", AccessLevel.ALL);
         data.manageAccess = featureDefaultAccess("ManageAccess", AccessLevel.OWNER);
         data.breakAccess = featureDefaultAccess("BreakAccess", AccessLevel.ALL);
         data.teleportLocation = TeleportLocation.TOP;
         data.customName = blockNamingDefaultName;
-        data.hologramEnabled = hologramsDefaultEnabled && featureEnabled("Hologram");
+        // Hologram default is taken from Holograms.DefaultEnabled, NOT from Features.Hologram.Enabled.
+        data.hologramEnabled = hologramsDefaultEnabled;
         data.id = 0;
 
         String key = data.key();
@@ -1300,7 +1308,8 @@ public final class Main extends JavaPlugin implements Listener, TabCompleter {
             return;
         }
         BlockData destination = null;
-        if (source.redirectEnabled && !source.redirectChain.isEmpty() && featureEnabled("Redirect")) {
+        // Redirect is a gameplay mechanic, independent from Features.Redirect.
+        if (source.redirectEnabled && !source.redirectChain.isEmpty()) {
             String key = source.key();
             int idx = redirectIndex.getOrDefault(key, 0);
             if (idx >= source.redirectChain.size()) idx = 0;
@@ -1385,11 +1394,8 @@ public final class Main extends JavaPlugin implements Listener, TabCompleter {
         String key = block.getWorld().getName() + ":" + block.getX() + ":" + block.getY() + ":" + block.getZ();
         BlockData data = blockDataMap.get(key);
         if (data == null) return;
-        if (!featureAllowed(player, "BreakAccess")) {
-            event.setCancelled(true);
-            debug("Break disabled or no permission");
-            return;
-        }
+        // Break is a gameplay mechanic, independent from Features.BreakAccess.
+        // Only Restrictions.Access + block's breakAccess control it.
         if (restrictionEnabled("Access") && !restrictionExempt(player, "Access")) {
             if (!canBreak(player, data)) {
                 event.setCancelled(true);
@@ -1533,6 +1539,8 @@ public final class Main extends JavaPlugin implements Listener, TabCompleter {
                 if (itemSec == null) continue;
                 if (!checkViewRequirement(player, itemSec)) continue;
 
+                // Feature flag: hide this GUI button if the category editor is disabled
+                // or the player lacks the permission. Gameplay is NOT affected.
                 String featureKey = guiItemFeatureKey(itemKey);
                 if (featureKey != null && !featureAllowed(player, featureKey)) continue;
 
@@ -2293,10 +2301,8 @@ public final class Main extends JavaPlugin implements Listener, TabCompleter {
     }
 
     private void updateHologram(BlockData data) {
-        if (!featureEnabled("Hologram")) {
-            removeHologram(data);
-            return;
-        }
+        // Hologram visibility depends only on the block's flag.
+        // Features.Hologram affects only the GUI editor, not the display.
         if (!data.hologramEnabled) {
             removeHologram(data);
             return;
@@ -2612,10 +2618,6 @@ public final class Main extends JavaPlugin implements Listener, TabCompleter {
             }
             List<BlockData> list = resolveBlockDataList(player, args, 1);
             if (list.isEmpty()) return true;
-            if (!featureAllowed(player, "Manage")) {
-                sendTeleporterPrefixed(player, msgNoPermission, msgNoPermissionType);
-                return true;
-            }
             BlockData target = null;
             for (BlockData d : list) {
                 if (canManage(player, d)) { target = d; break; }
